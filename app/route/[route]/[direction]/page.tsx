@@ -48,7 +48,7 @@ export default async function RoutePage({ params }: PageProps) {
     );
   }
 
-  const dir = directionText(routeInfo.direction);
+  const dir = directionText(routeInfo.bound);
   const serviceType = routeInfo.service_type;
 
   return (
@@ -76,7 +76,7 @@ export default async function RoutePage({ params }: PageProps) {
             <div className="text-right text-sm">
               <div className="text-stone-500">服務類型</div>
               <div className="font-medium">
-                {serviceType === 1 ? "常規" : "特別"}
+                {String(serviceType) === "1" ? "常規" : "特別"}
               </div>
             </div>
           </div>
@@ -116,7 +116,7 @@ export default async function RoutePage({ params }: PageProps) {
             <StopList
               stops={stops}
               route={routeInfo.route}
-              serviceType={serviceType}
+              serviceType={String(serviceType) === "2" ? 2 : 1}
             />
           )}
         </div>
