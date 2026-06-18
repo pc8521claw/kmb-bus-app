@@ -33,7 +33,9 @@ export async function fetchRouteInfo(
   }
 
   const json = await res.json();
-  if (!json.data || typeof json.data !== "object") return null;
+  // KMB API 對錯嘅 route 返 data: {} (空 object)
+  // 要 check 埋 data 裡面有冇實際內容
+  if (!json.data || typeof json.data !== "object" || !("route" in json.data) || Object.keys(json.data).length === 0) return null;
   return json.data as RouteInfo;
 }
 
