@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-
-const POPULAR_ROUTES = [
-  "1", "1A", "2", "6", "6C", "38", "58M", "59A", "68X", "81C", "87D", "98D",
-];
+import { useState, useEffect } from "react";
+import { getFavorites } from "@/lib/favorites";
 
 export default function Home() {
   const router = useRouter();
   const [route, setRoute] = useState("");
   const [direction, setDirection] = useState<"outbound" | "inbound">("outbound");
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  // Load favorites from localStorage
+  useEffect(() => {
+    setFavorites(getFavorites());
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +29,10 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-            KMB 巴士路線
+            巴士路線搜尋
           </h1>
           <p className="text-stone-900 text-sm sm:text-base">
-            九巴路線、站點同預計到站時間
+            巴士路線、車站及到站時間
           </p>
         </div>
 
@@ -83,22 +86,28 @@ export default function Home() {
           </button>
         </form>
 
-        {/* Popular Routes */}
+        {/* 常用路線 (Favorites) */}
         <div className="mt-8">
           <h2 className="text-sm font-medium text-stone-900 mb-3 text-center">
-            熱門路線
+            常用路線
           </h2>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {POPULAR_ROUTES.map((r) => (
-              <Link
-                key={r}
-                href={`/route/${r}/outbound`}
-                className="px-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 text-stone-900 hover:border-blue-400 hover:text-blue-600 transition-colors"
-              >
-                {r}
-              </Link>
-            ))}
-          </div>
+          {favorites.length === 0 ? (
+            <p className="text-center text-xs text-stone-900 opacity-50">
+              撳路線結果頁面嘅 ⭐ 加到常用路線
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2 justify-center">
+              {favorites.map((r) => (
+                <Link
+                  key={r}
+                  href={`/route/${encodeURIComponent(r)}/outbound`}
+                  className="px-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 text-stone-900 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                >
+                  {r}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Footer */}

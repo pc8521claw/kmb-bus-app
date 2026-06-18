@@ -6,6 +6,7 @@ import {
 } from "@/lib/kmb-api";
 import { directionText } from "@/lib/types";
 import StopList from "@/components/StopList";
+import FavoriteButton from "@/components/FavoriteButton";
 
 interface PageProps {
   params: Promise<{
@@ -78,9 +79,12 @@ export default async function RoutePage({ params }: PageProps) {
                   <span>改變方向</span>
                 </Link>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                路線 {routeInfo.route}
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  路線 {routeInfo.route}
+                </h1>
+                <FavoriteButton route={routeInfo.route} />
+              </div>
             </div>
             <div className="text-right text-sm">
               <div className="text-stone-900">服務類型</div>
