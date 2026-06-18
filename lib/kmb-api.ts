@@ -33,7 +33,8 @@ export async function fetchRouteInfo(
   }
 
   const json = await res.json();
-  return json.data?.[0] || null;
+  if (!json.data || typeof json.data !== "object") return null;
+  return json.data as RouteInfo;
 }
 
 /**
@@ -73,7 +74,8 @@ export async function fetchStopInfo(stopId: string): Promise<StopInfo | null> {
   }
 
   const json = await res.json();
-  return json.data?.[0] || null;
+  if (!json.data || typeof json.data !== "object") return null;
+  return json.data as StopInfo;
 }
 
 /**
