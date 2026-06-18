@@ -10,7 +10,7 @@ const POPULAR_ROUTES = [
 
 export default function Home() {
   const router = useRouter();
-  const [route, setRoute] = useState("58M");
+  const [route, setRoute] = useState("");
   const [direction, setDirection] = useState<"outbound" | "inbound">("outbound");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -70,8 +70,8 @@ export default function Home() {
               onChange={(e) => setDirection(e.target.value as "outbound" | "inbound")}
               className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-base bg-white transition-colors"
             >
-              <option value="outbound">出境 (Outbound)</option>
-              <option value="inbound">入境 (Inbound)</option>
+              <option value="outbound">去程 (Outbound)</option>
+              <option value="inbound">返程 (Inbound)</option>
             </select>
           </div>
 
@@ -102,7 +102,7 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 text-center text-xs text-stone-900">
+        <div className="mt-12 text-center text-xs text-stone-900 opacity-50">
           數據來源：九巴開放數據 API
           <br />
           Data source: KMB Open Data API
