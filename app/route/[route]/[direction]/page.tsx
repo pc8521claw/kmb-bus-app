@@ -34,7 +34,7 @@ export default async function RoutePage({ params }: PageProps) {
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold mb-3">搵唔到路線 {route}</h1>
-          <p className="text-stone-500 mb-6">
+          <p className="text-stone-700 mb-6">
             請檢查路線號碼，或者試下其他方向。
           </p>
           <Link
@@ -57,7 +57,7 @@ export default async function RoutePage({ params }: PageProps) {
         {/* Back link */}
         <Link
           href="/"
-          className="inline-flex items-center text-sm text-stone-500 hover:text-blue-600 mb-4 transition-colors"
+          className="inline-flex items-center text-sm text-stone-700 hover:text-blue-600 mb-4 transition-colors"
         >
           ← 返回搜尋
         </Link>
@@ -74,7 +74,7 @@ export default async function RoutePage({ params }: PageProps) {
               </h1>
             </div>
             <div className="text-right text-sm">
-              <div className="text-stone-500">服務類型</div>
+              <div className="text-stone-700">服務類型</div>
               <div className="font-medium">
                 {String(serviceType) === "1" ? "常規" : "特別"}
               </div>
@@ -83,17 +83,17 @@ export default async function RoutePage({ params }: PageProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="flex items-start gap-2">
-              <span className="text-stone-400 shrink-0">起點</span>
+              <span className="text-stone-600 shrink-0">起點</span>
               <div>
                 <div className="font-medium">{routeInfo.orig_tc}</div>
-                <div className="text-stone-500 text-xs">{routeInfo.orig_en}</div>
+                <div className="text-stone-700 text-xs">{routeInfo.orig_en}</div>
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <span className="text-stone-400 shrink-0">終點</span>
+              <span className="text-stone-600 shrink-0">終點</span>
               <div>
                 <div className="font-medium">{routeInfo.dest_tc}</div>
-                <div className="text-stone-500 text-xs">{routeInfo.dest_en}</div>
+                <div className="text-stone-700 text-xs">{routeInfo.dest_en}</div>
               </div>
             </div>
           </div>
@@ -103,13 +103,13 @@ export default async function RoutePage({ params }: PageProps) {
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-6">
           <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
             <span>途經站點</span>
-            <span className="text-xs text-stone-400 font-normal">
+            <span className="text-xs text-stone-600 font-normal">
               ({stops.length} 站)
             </span>
           </h2>
 
           {stops.length === 0 ? (
-            <p className="text-stone-500 text-sm text-center py-8">
+            <p className="text-stone-700 text-sm text-center py-8">
               此路線暫無站點資料
             </p>
           ) : (
@@ -122,7 +122,7 @@ export default async function RoutePage({ params }: PageProps) {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-xs text-stone-400">
+        <div className="mt-8 text-center text-xs text-stone-600">
           數據來源：九巴開放數據 API
         </div>
       </div>

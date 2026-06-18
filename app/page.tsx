@@ -28,7 +28,7 @@ export default function Home() {
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
             KMB 巴士路線
           </h1>
-          <p className="text-stone-500 text-sm sm:text-base">
+          <p className="text-stone-700 text-sm sm:text-base">
             九巴路線、站點同預計到站時間
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function Home() {
 
         {/* Popular Routes */}
         <div className="mt-8">
-          <h2 className="text-sm font-medium text-stone-500 mb-3 text-center">
+          <h2 className="text-sm font-medium text-stone-700 mb-3 text-center">
             熱門路線
           </h2>
           <div className="flex flex-wrap gap-2 justify-center">
@@ -102,7 +102,7 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 text-center text-xs text-stone-400">
+        <div className="mt-12 text-center text-xs text-stone-600">
           數據來源：九巴開放數據 API
           <br />
           Data source: KMB Open Data API
