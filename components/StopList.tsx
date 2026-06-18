@@ -69,13 +69,13 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-mono text-stone-800 shrink-0">
+                  <span className="text-xs font-mono text-stone-900 shrink-0">
                     {stop.seq.padStart(2, "0")}
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="font-medium truncate">{stop.name_tc}</div>
                     {stop.name_en && (
-                      <div className="text-xs text-stone-800 truncate">
+                      <div className="text-xs text-stone-900 truncate">
                         {stop.name_en}
                       </div>
                     )}
@@ -85,7 +85,7 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
               <button
                 onClick={() => fetchEta(stop.stop)}
                 disabled={state?.loading}
-                className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-800 rounded-md transition-colors"
+                className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-900 rounded-md transition-colors"
               >
                 {state?.loading ? "..." : "查 ETA"}
               </button>
@@ -95,32 +95,32 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
             {(state?.loading || hasEta || state?.error) && (
               <div className="mt-2 ml-7 text-sm">
                 {state?.loading && (
-                  <div className="text-stone-800 text-xs">查詢中...</div>
+                  <div className="text-stone-900 text-xs">查詢中...</div>
                 )}
                 {state?.error && (
                   <div className="text-red-500 text-xs">{state.error}</div>
                 )}
                 {hasEta && etas.length === 0 && (
-                  <div className="text-stone-800 text-xs">暫無 ETA 資料</div>
+                  <div className="text-stone-900 text-xs">暫無 ETA 資料</div>
                 )}
                 {hasEta && etas.length > 0 && (
                   <div className="space-y-1">
                     {etas.map((e, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-2 text-stone-800"
+                        className="flex items-center gap-2 text-stone-900"
                       >
                         <span className="text-green-600 font-medium">
                           🚌 {formatEta(e.eta!)}
                         </span>
-                        <span className="text-xs text-stone-800">
+                        <span className="text-xs text-stone-900">
                           ({new Date(e.eta!).toLocaleTimeString("zh-HK", {
                             hour: "2-digit",
                             minute: "2-digit",
                           })})
                         </span>
                         {e.rmk_tc && (
-                          <span className="text-xs text-stone-800">
+                          <span className="text-xs text-stone-900">
                             {e.rmk_tc}
                           </span>
                         )}
