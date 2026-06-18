@@ -10,17 +10,49 @@ export default function Home() {
   const [route, setRoute] = useState("");
   const [direction, setDirection] = useState<"outbound" | "inbound">("outbound");
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [error, setError] = useState("");
+  const [checking, setChecking] = useState(false);
 
   // Load favorites from localStorage
   useEffect(() => {
     setFavorites(getFavorites());
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleRouteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 強制轉大楷
+    setRoute(e.target.value.toUpperCase());
+    if (error) setError("");  // 清除錯誤
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = route.trim();
     if (!trimmed) return;
-    router.push(`/route/${encodeURIComponent(trimmed)}/${direction}`);
+
+    setError("");
+    setChecking(true);
+
+    try {
+      // 檢查路線是否存在
+      const res = await fetch(
+        `/api/check-route?route=${encodeURIComponent(trimmed)}&direction=${direction}`
+      );
+      if (res.status === 404) {
+        setError("錯誤的路線號碼");
+        setChecking(false);
+        return;
+      }
+      if (!res.ok) {
+        setError("查詢失敗，請稍後再試");
+        setChecking(false);
+        return;
+      }
+      // 路線存在，導航
+      router.push(`/route/${encodeURIComponent(trimmed)}/${direction}`);
+    } catch (e) {
+      setError("網絡錯誤，請稍後再試");
+      setChecking(false);
+    }
   };
 
   return (
@@ -40,6 +72,7 @@ export default function Home() {
         <form
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 space-y-4"
+          noValidate
         >
           <div>
             <label
@@ -52,12 +85,29 @@ export default function Home() {
               type="text"
               id="route"
               value={route}
-              onChange={(e) => setRoute(e.target.value)}
+              onChange={handleRouteChange}
               placeholder="例：58M"
               required
               autoFocus
-              className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-base transition-colors"
+              onInvalid={(e) => e.preventDefault()}
+              className={`w-full px-4 py-2.5 rounded-lg border outline-none text-base transition-colors ${
+                error
+                  ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                  : "border-stone-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              }`}
             />
+            {error && (
+              <div className="mt-1.5 flex items-center gap-1.5 text-sm text-red-600">
+                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span>{error}</span>
+              </div>
+            )}
           </div>
 
           <div>
@@ -80,9 +130,10 @@ export default function Home() {
 
           <button
             type="submit"
-            className="w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors"
+            disabled={checking}
+            className="w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors disabled:bg-stone-400"
           >
-            查詢路線
+            {checking ? "查詢中..." : "查詢路線"}
           </button>
         </form>
 
