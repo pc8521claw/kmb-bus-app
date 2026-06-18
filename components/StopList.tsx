@@ -87,7 +87,7 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
                 disabled={state?.loading}
                 className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-900 rounded-md transition-colors"
               >
-                {state?.loading ? "..." : "查 ETA"}
+                {state?.loading ? "..." : "到站時間"}
               </button>
             </div>
 

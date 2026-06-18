@@ -122,7 +122,7 @@ export default async function RoutePage({ params }: PageProps) {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-xs text-stone-900">
+        <div className="mt-8 text-center text-xs text-stone-900 opacity-50">
           數據來源：九巴開放數據 API
         </div>
       </div>
