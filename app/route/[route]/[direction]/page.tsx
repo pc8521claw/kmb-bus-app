@@ -62,6 +62,17 @@ export default async function RoutePage({ params }: PageProps) {
           ← 返回搜尋
         </Link>
 
+        {/* 改變方向掣（隔離，唔嵌入 route header） */}
+        <div className="mb-4">
+          <Link
+            href={`/route/${routeInfo.route}/${routeInfo.bound === "O" ? "inbound" : "outbound"}`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-stone-300 text-stone-700 text-sm font-medium rounded-lg hover:border-blue-400 hover:text-blue-600 transition-colors"
+          >
+            <span>↔</span>
+            <span>改變方向 ({routeInfo.bound === "O" ? "入郊區" : "出市區"})</span>
+          </Link>
+        </div>
+
         {/* Route Header */}
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-6 mb-4">
           <div className="flex items-start justify-between gap-3 mb-3">

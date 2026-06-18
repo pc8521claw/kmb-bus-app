@@ -70,8 +70,8 @@ export default function Home() {
               onChange={(e) => setDirection(e.target.value as "outbound" | "inbound")}
               className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-base bg-white transition-colors"
             >
-              <option value="outbound">去程 (Outbound)</option>
-              <option value="inbound">返程 (Inbound)</option>
+              <option value="outbound">出市區 (Outbound)</option>
+              <option value="inbound">入郊區 (Inbound)</option>
             </select>
           </div>
 

@@ -65,6 +65,6 @@ export interface StopWithName extends RouteStop {
 
 // Direction text helper (API 用 `bound` 唔用 `direction`)
 export const directionText = (bound: Bound) => {
-  if (bound === "I") return { tc: "返程", en: "Inbound" };
-  return { tc: "去程", en: "Outbound" };
+  if (bound === "I") return { tc: "入郊區", en: "Inbound" };
+  return { tc: "出市區", en: "Outbound" };
 };
