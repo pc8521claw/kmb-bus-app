@@ -58,9 +58,10 @@ export default async function RoutePage({ params }: PageProps) {
         {/* Back link */}
         <Link
           href="/"
-          className="inline-flex items-center text-sm text-stone-900 hover:text-blue-600 mb-4 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 mb-4 bg-white border border-stone-300 text-stone-700 text-sm font-medium rounded-lg shadow-sm hover:border-blue-400 hover:text-blue-600 hover:shadow transition-all"
         >
-          ← 返回搜尋
+          <span>←</span>
+          <span>返回搜尋</span>
         </Link>
 
         {/* Route Header */}

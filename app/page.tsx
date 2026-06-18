@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getFavorites } from "@/lib/favorites";
 
 export default function Home() {
@@ -12,6 +12,7 @@ export default function Home() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -22,6 +23,12 @@ export default function Home() {
     // 強制轉大楷
     setRoute(e.target.value.toUpperCase());
     if (error) setError("");  // 清除錯誤
+  };
+
+  const clearRoute = () => {
+    setRoute("");
+    setError("");
+    inputRef.current?.focus();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,21 +88,35 @@ export default function Home() {
             >
               路線號碼
             </label>
-            <input
-              type="text"
-              id="route"
-              value={route}
-              onChange={handleRouteChange}
-              placeholder="例：58M"
-              required
-              autoFocus
-              onInvalid={(e) => e.preventDefault()}
-              className={`w-full px-4 py-2.5 rounded-lg border outline-none text-base transition-colors ${
-                error
-                  ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                  : "border-stone-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              }`}
-            />
+            <div className="relative">
+              <input
+                ref={inputRef}
+                type="text"
+                id="route"
+                value={route}
+                onChange={handleRouteChange}
+                placeholder="例：58M"
+                required
+                autoFocus
+                onInvalid={(e) => e.preventDefault()}
+                className={`w-full px-4 py-2.5 rounded-lg border outline-none text-base transition-colors ${
+                  error
+                    ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                    : "border-stone-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                } ${route ? "pr-10" : ""}`}
+              />
+              {route && (
+                <button
+                  type="button"
+                  onClick={clearRoute}
+                  title="清除"
+                  aria-label="清除輸入"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 inline-flex items-center justify-center rounded-full text-stone-900 opacity-50 hover:opacity-100 hover:bg-stone-100 transition-all"
+                >
+                  ×
+                </button>
+              )}
+            </div>
             {error && (
               <div className="mt-1.5 flex items-center gap-1.5 text-sm text-red-600">
                 <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
