@@ -1,65 +1,113 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+const POPULAR_ROUTES = [
+  "1", "1A", "2", "6", "6C", "38", "58M", "59A", "68X", "81C", "87D", "98D",
+];
 
 export default function Home() {
+  const router = useRouter();
+  const [route, setRoute] = useState("58M");
+  const [direction, setDirection] = useState<"outbound" | "inbound">("outbound");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = route.trim();
+    if (!trimmed) return;
+    router.push(`/route/${encodeURIComponent(trimmed)}/${direction}`);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="flex-1 flex flex-col items-center px-4 py-12 sm:py-16">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+            KMB 巴士路線
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-stone-500 text-sm sm:text-base">
+            九巴路線、站點同預計到站時間
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Search Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 space-y-4"
+        >
+          <div>
+            <label
+              htmlFor="route"
+              className="block text-sm font-medium text-stone-700 mb-1.5"
+            >
+              路線號碼
+            </label>
+            <input
+              type="text"
+              id="route"
+              value={route}
+              onChange={(e) => setRoute(e.target.value)}
+              placeholder="例：58M"
+              required
+              autoFocus
+              className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-base transition-colors"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+
+          <div>
+            <label
+              htmlFor="direction"
+              className="block text-sm font-medium text-stone-700 mb-1.5"
+            >
+              方向
+            </label>
+            <select
+              id="direction"
+              value={direction}
+              onChange={(e) => setDirection(e.target.value as "outbound" | "inbound")}
+              className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-base bg-white transition-colors"
+            >
+              <option value="outbound">出境 (Outbound)</option>
+              <option value="inbound">入境 (Inbound)</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors"
           >
-            Documentation
-          </a>
+            查詢路線
+          </button>
+        </form>
+
+        {/* Popular Routes */}
+        <div className="mt-8">
+          <h2 className="text-sm font-medium text-stone-500 mb-3 text-center">
+            熱門路線
+          </h2>
+          <div className="flex flex-wrap gap-2 justify-center">
+            {POPULAR_ROUTES.map((r) => (
+              <Link
+                key={r}
+                href={`/route/${r}/outbound`}
+                className="px-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 text-stone-700 hover:border-blue-400 hover:text-blue-600 transition-colors"
+              >
+                {r}
+              </Link>
+            ))}
+          </div>
         </div>
-      </main>
-    </div>
+
+        {/* Footer */}
+        <div className="mt-12 text-center text-xs text-stone-400">
+          數據來源：九巴開放數據 API
+          <br />
+          Data source: KMB Open Data API
+        </div>
+      </div>
+    </main>
   );
 }
