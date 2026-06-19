@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KMB 巴士路線查詢 (KMB Bus Route Query)
 
-## Getting Started
+查詢九巴 (KMB) 巴士路線嘅站點、預計到站時間 (ETA)、車費及服務時間。
 
-First, run the development server:
+🌐 **Live Demo**: <https://kmb-bus-app.vercel.app/>
+
+## ✨ 功能
+
+- 🚌 路線搜尋（支援 KMB 全部路線）
+- 📍 站點列表 + 即時 ETA
+- ⏰ Auto-refresh ETA（每 30 秒）
+- ⭐ 常用路線書籤 (Favorites)
+- 💰 **全程車費**（由 hk-bus-crawling 提供）
+- 📅 **服務時間表**（首尾班車 + 詳細班次）
+
+## 🚀 Getting Started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+打開 <http://localhost:3000>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔄 更新車費及服務時間數據
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+⚠️ 數據**預設唔自動更新**。要更新請手動跑：
 
-## Learn More
+```bash
+bash scripts/update-fare-data.sh
+```
 
-To learn more about Next.js, take a look at the following resources:
+然後 commit 同 push：
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+git add apps/kmb-bus-app/data/routeFareList.min.json
+git commit -m "chore: update KMB fare & schedule data"
+git push
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Vercel 會自動 deploy。
 
-## Deploy on Vercel
+### 數據源
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[hkbus/hk-bus-crawling](https://github.com/hkbus/hk-bus-crawling) - 每日 GitHub Actions 自動更新，涵蓋 KMB/CTB/NLB/MTR/小巴 嘅 route/fare/schedule/stop 數據。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📁 專案結構
+
+```
+apps/kmb-bus-app/
+├── app/
+│   ├── page.tsx                          ← 搜尋首頁
+│   ├── route/[route]/[direction]/page.tsx ← 結果頁
+│   ├── api/eta/route.ts                  ← ETA API endpoint
+│   └── api/check-route/route.ts          ← 路線 validation
+├── components/
+│   ├── StopList.tsx                      ← 站點列表 + ETA 按鈕
+│   └── FavoriteButton.tsx                ← 收藏按鈕
+├── lib/
+│   ├── kmb-api.ts                        ← KMB API client
+│   ├── fare-data.ts                      ← 車費及服務時間 API
+│   ├── favorites.ts                      ← localStorage 收藏管理
+│   └── types.ts                          ← TypeScript types
+├── data/
+│   └── routeFareList.min.json            ← 車費及服務時間本地快照 (7.9MB)
+└── scripts/
+    └── update-fare-data.sh               ← 手動更新腳本
+```
+
+## 📊 數據源
+
+| 功能 | 來源 |
+|------|------|
+| 路線資料 | [KMB Open Data API](https://data.etabus.gov.hk/v1/transport/kmb) |
+| 即時 ETA | KMB Open Data API |
+| 站點資料 | KMB Open Data API |
+| 車費及服務時間 | [hk-bus-crawling](https://github.com/hkbus/hk-bus-crawling) |
+
+## 🛠️ Deploy on Vercel
+
+[Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying)

@@ -4,6 +4,11 @@ import {
   fetchRouteInfo,
   fetchStopsWithNames,
 } from "@/lib/kmb-api";
+import {
+  getFullFare,
+  getSchedule,
+  getServiceHours,
+} from "@/lib/fare-data";
 import { directionText } from "@/lib/types";
 import StopList from "@/components/StopList";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -51,6 +56,11 @@ export default async function RoutePage({ params }: PageProps) {
 
   const dir = directionText(routeInfo.bound);
   const serviceType = routeInfo.service_type;
+
+  // 取得車費 + 服務時間數據 (從本地 hk-bus-crawling data)
+  const fullFare = getFullFare(route, direction, serviceType);
+  const schedule = getSchedule(route, direction, serviceType);
+  const serviceHours = getServiceHours(route, direction, serviceType);
 
   return (
     <main className="flex-1 flex flex-col px-4 py-6 sm:py-8">
@@ -113,6 +123,99 @@ export default async function RoutePage({ params }: PageProps) {
           </div>
         </div>
 
+        {/* Fare & Schedule Section */}
+        {(fullFare || schedule) && (
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-6 mb-4">
+            <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
+              <span>💰</span>
+              <span>車費及服務時間</span>
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              {/* Full Fare */}
+              <div className="bg-stone-50 rounded-lg p-4">
+                <div className="text-stone-900 text-xs mb-1">全程車費</div>
+                {fullFare ? (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xs text-stone-900">HK$</span>
+                    <span className="text-2xl font-bold">{fullFare}</span>
+                  </div>
+                ) : (
+                  <div className="text-stone-900 text-sm">暫無車費資料</div>
+                )}
+                <div className="text-xs text-stone-900 mt-1">
+                  八達通 / 現金 · 不設找續
+                </div>
+              </div>
+
+              {/* Service Hours */}
+              <div className="bg-stone-50 rounded-lg p-4">
+                <div className="text-stone-900 text-xs mb-1">服務時間</div>
+                {serviceHours ? (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-base font-medium">
+                      {serviceHours.firstBus}
+                    </span>
+                    <span className="text-stone-900 text-xs">至</span>
+                    <span className="text-base font-medium">
+                      {serviceHours.lastBus}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-stone-900 text-sm">暫無資料</div>
+                )}
+                <div className="text-xs text-stone-900 mt-1">
+                  首班車 → 尾班車
+                </div>
+              </div>
+            </div>
+
+            {/* Schedule Table */}
+            {schedule && schedule.length > 0 && (
+              <details className="mt-4">
+                <summary className="text-sm font-medium cursor-pointer text-stone-700 hover:text-blue-600 select-none">
+                  📅 詳細班次表 ({schedule.length} 個時段)
+                </summary>
+                <div className="mt-3 max-h-64 overflow-y-auto border border-stone-200 rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-stone-100 sticky top-0">
+                      <tr>
+                        <th className="text-left px-3 py-2 font-medium text-stone-700">
+                          由
+                        </th>
+                        <th className="text-left px-3 py-2 font-medium text-stone-700">
+                          至
+                        </th>
+                        <th className="text-right px-3 py-2 font-medium text-stone-700">
+                          班次
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schedule.map((slot, idx) => (
+                        <tr
+                          key={`${slot.startTime}-${idx}`}
+                          className="border-t border-stone-100"
+                        >
+                          <td className="px-3 py-2 font-mono">
+                            {slot.startTime}
+                          </td>
+                          <td className="px-3 py-2 font-mono">
+                            {slot.endTime}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            每 {slot.frequencyMin} 分鐘
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            )}
+          </div>
+        )}
+
         {/* Stops Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-6">
           <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
@@ -137,7 +240,7 @@ export default async function RoutePage({ params }: PageProps) {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-stone-900 opacity-50">
-          數據來源：九巴開放數據 API
+          數據來源：九巴開放數據 API + hk-bus-crawling
         </div>
       </div>
     </main>
