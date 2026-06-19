@@ -131,11 +131,22 @@ export function getSchedule(
   if (!entry || !entry.freq || Object.keys(entry.freq).length === 0) return null;
 
   // 合併所有 serviceDay 嘅時段 (用 startTime 去重)
+  // ⚠️ hk-bus-crawling 數據入面有啲 value 係 null (e.g., 80X 嘅 "0740": null)，
+  // 要 filter 走，唔係會 throw "object null is not iterable"
   const slotMap = new Map<string, [string, number]>();
   for (const dayEntries of Object.values(entry.freq)) {
     for (const [startTime, value] of Object.entries(dayEntries)) {
-      if (!slotMap.has(startTime)) {
-        slotMap.set(startTime, value);
+      // Skip null 同無效 array values
+      if (
+        value &&
+        Array.isArray(value) &&
+        value.length === 2 &&
+        typeof value[0] === "string" &&
+        typeof value[1] === "number"
+      ) {
+        if (!slotMap.has(startTime)) {
+          slotMap.set(startTime, value as [string, number]);
+        }
       }
     }
   }
