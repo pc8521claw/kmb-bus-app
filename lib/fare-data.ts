@@ -131,8 +131,9 @@ export function getSchedule(
   if (!entry || !entry.freq || Object.keys(entry.freq).length === 0) return null;
 
   // 合併所有 serviceDay 嘅時段 (用 startTime 去重)
-  // ⚠️ hk-bus-crawling 數據入面有啲 value 係 null (e.g., 80X 嘅 "0740": null)，
-  // 要 filter 走，唔係會 throw "object null is not iterable"
+  // ⚠️ hk-bus-crawling 數據有兩個 quirks 要 handle:
+  //   1. value 可能是 null (e.g., 80X "0740": null) → filter 走
+  //   2. value[1] (frequency seconds) 可能是 string ("540") 而非 number (540) → Number() 轉
   const slotMap = new Map<string, [string, number]>();
   for (const dayEntries of Object.values(entry.freq)) {
     for (const [startTime, value] of Object.entries(dayEntries)) {
@@ -142,10 +143,11 @@ export function getSchedule(
         Array.isArray(value) &&
         value.length === 2 &&
         typeof value[0] === "string" &&
-        typeof value[1] === "number"
+        (typeof value[1] === "number" || typeof value[1] === "string")
       ) {
-        if (!slotMap.has(startTime)) {
-          slotMap.set(startTime, value as [string, number]);
+        const freqSec = Number(value[1]);
+        if (!isNaN(freqSec) && !slotMap.has(startTime)) {
+          slotMap.set(startTime, [value[0], freqSec]);
         }
       }
     }
