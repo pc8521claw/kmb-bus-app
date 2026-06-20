@@ -61,6 +61,8 @@ export interface EtaInfo {
 export interface StopWithName extends RouteStop {
   name_tc: string;
   name_en: string;
+  lat: string;
+  long: string;
 }
 
 // Direction text helper (API 用 `bound` 唔用 `direction`)

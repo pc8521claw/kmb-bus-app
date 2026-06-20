@@ -3,6 +3,25 @@
 import { useState, useEffect, useRef } from "react";
 import type { StopWithName, ServiceType, EtaInfo } from "@/lib/types";
 
+// 取得 platform 對應嘅地圖 URL
+// iOS → Apple Maps (native)
+// Android → geo: URI (Google Maps app)
+// Desktop/Web → Google Maps web
+function getMapUrl(lat: string, long: string, name: string): string | null {
+  if (!lat || !long) return null;
+  const encodedName = encodeURIComponent(name);
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+  if (/iPhone|iPad|iPod/.test(ua)) {
+    // Apple Maps
+    return `https://maps.apple.com/?q=${encodedName}&ll=${lat},${long}`;
+  } else if (/Android/.test(ua)) {
+    // Google Maps via geo URI (打開 app if installed)
+    return `geo:${lat},${long}?q=${lat},${long}(${encodedName})`;
+  }
+  // Web fallback
+  return `https://www.google.com/maps?q=${lat},${long}`;
+}
+
 interface StopListProps {
   stops: StopWithName[];
   route: string;
@@ -217,13 +236,31 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => fetchEta(stop.stop)}
-                  disabled={state?.loading}
-                  className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-900 rounded-md transition-colors"
-                >
-                  {state?.loading ? "..." : "到站時間"}
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {/* Open in Maps */}
+                  {stop.lat && stop.long && (() => {
+                    const mapUrl = getMapUrl(stop.lat, stop.long, stop.name_tc);
+                    return mapUrl ? (
+                      <a
+                        href={mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="開地圖"
+                        aria-label={`開地圖：${stop.name_tc}`}
+                        className="px-2 py-1.5 text-xs text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-md transition-colors"
+                      >
+                        🗺️
+                      </a>
+                    ) : null;
+                  })()}
+                  <button
+                    onClick={() => fetchEta(stop.stop)}
+                    disabled={state?.loading}
+                    className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-900 rounded-md transition-colors"
+                  >
+                    {state?.loading ? "..." : "到站時間"}
+                  </button>
+                </div>
               </div>
 
               {/* ETA 結果 */}

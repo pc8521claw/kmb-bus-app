@@ -119,6 +119,8 @@ export async function fetchStopsWithNames(
         ...stop,
         name_tc: info?.name_tc || stop.stop,
         name_en: info?.name_en || "",
+        lat: info?.lat || "",
+        long: info?.long || "",
       };
     })
   );
