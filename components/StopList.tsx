@@ -193,7 +193,7 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
               }`}
             />
             <span>
-              {isRefreshing ? "更新中..." : "自動每 30 秒更新"}
+              {isRefreshing ? "更新中..." : "每 30 秒自動更新"}
             </span>
           </div>
           <button
@@ -220,47 +220,45 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
               key={stop.stop}
               className="border border-stone-100 rounded-lg p-3 hover:border-stone-200 transition-colors"
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xs font-mono text-stone-900 shrink-0">
-                      {stop.seq.padStart(2, "0")}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium truncate">{stop.name_tc}</div>
-                      {stop.name_en && (
-                        <div className="text-xs text-stone-900 truncate">
-                          {stop.name_en}
-                        </div>
-                      )}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs font-mono text-stone-900 shrink-0">
+                        {stop.seq.padStart(2, "0")}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium truncate">{stop.name_tc}</div>
+                        {stop.name_en && (
+                          <div className="text-xs text-stone-900 truncate">
+                            {stop.name_en}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {/* Open in Maps */}
-                  {stop.lat && stop.long && (() => {
-                    const mapUrl = getMapUrl(stop.lat, stop.long, stop.name_tc);
-                    return mapUrl ? (
-                      <a
-                        href={mapUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="開地圖"
-                        aria-label={`開地圖：${stop.name_tc}`}
-                        className="px-2 py-1.5 text-xs text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-md transition-colors"
-                      >
-                        🗺️
-                      </a>
-                    ) : null;
-                  })()}
                   <button
                     onClick={() => fetchEta(stop.stop)}
                     disabled={state?.loading}
-                    className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-900 rounded-md transition-colors"
+                    className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-900 rounded-md transition-colors"
                   >
                     {state?.loading ? "..." : "到站時間"}
                   </button>
                 </div>
+                {/* 車站位置 button (下面對齊) */}
+                {stop.lat && stop.long && (() => {
+                  const mapUrl = getMapUrl(stop.lat, stop.long, stop.name_tc);
+                  return mapUrl ? (
+                    <a
+                      href={mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="self-end px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors"
+                    >
+                      車站位置
+                    </a>
+                  ) : null;
+                })()}
               </div>
 
               {/* ETA 結果 */}
