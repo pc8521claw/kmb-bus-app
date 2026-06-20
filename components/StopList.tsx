@@ -155,20 +155,15 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
     return `${diffMin} 分鐘後`;
   };
 
-  // 計算上次更新時間（最舊嗰個為準）
-  const lastUpdatedList = Object.values(etaMap)
-    .map((s) => s.lastUpdated)
-    .filter((t): t is number => t !== null)
-    .sort((a, b) => a - b);
-  const oldestUpdate = lastUpdatedList[0];
-  const secondsSinceUpdate = oldestUpdate
-    ? Math.floor((Date.now() - oldestUpdate) / 1000)
-    : null;
+  // 檢查有冇任何 ETA data（用嚟判斷要唔要顯示 auto-refresh status bar）
+  const hasAnyEta = Object.values(etaMap).some(
+    (s) => s.lastUpdated !== null
+  );
 
   return (
     <div>
       {/* Auto-refresh status bar（只有有 ETA 數據先顯示） */}
-      {lastUpdatedList.length > 0 && (
+      {hasAnyEta && (
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-1.5 text-xs text-stone-900">
             <span
