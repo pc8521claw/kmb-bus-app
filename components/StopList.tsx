@@ -179,11 +179,7 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
               }`}
             />
             <span>
-              {isRefreshing
-                ? "更新中..."
-                : secondsSinceUpdate !== null
-                ? `上次更新 ${secondsSinceUpdate} 秒前 · 自動每 30 秒`
-                : "自動每 30 秒更新"}
+              {isRefreshing ? "更新中..." : "自動每 30 秒更新"}
             </span>
           </div>
           <button
