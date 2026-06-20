@@ -4,19 +4,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { getFavorites } from "@/lib/favorites";
+import { getRecent, type RecentSearch } from "@/lib/recent";
 
 export default function Home() {
   const router = useRouter();
   const [route, setRoute] = useState("");
   const [direction, setDirection] = useState<"outbound" | "inbound">("outbound");
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [recent, setRecent] = useState<RecentSearch[]>([]);
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load favorites from localStorage
+  // Load favorites + recent from localStorage
   useEffect(() => {
     setFavorites(getFavorites());
+    setRecent(getRecent());
   }, []);
 
   const handleRouteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,6 +179,34 @@ export default function Home() {
                   className="px-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 text-stone-900 hover:border-blue-400 hover:text-blue-600 transition-colors"
                 >
                   {r}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 最近搜尋 (Recent Searches) */}
+        <div className="mt-6">
+          <h2 className="text-sm font-medium text-stone-900 mb-3 text-center">
+            最近搜尋
+          </h2>
+          {recent.length === 0 ? (
+            <p className="text-center text-xs text-stone-900 opacity-50">
+              搜尋過嘅路線會出現喺度
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2 justify-center">
+              {recent.map((entry) => (
+                <Link
+                  key={`${entry.route}-${entry.direction}-${entry.timestamp}`}
+                  href={`/route/${encodeURIComponent(entry.route)}/${entry.direction}`}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 text-stone-900 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                  title={`${entry.direction === "outbound" ? "出市區" : "入郊區"}`}
+                >
+                  <span>{entry.route}</span>
+                  <span className="text-xs text-stone-900 opacity-60">
+                    {entry.direction === "outbound" ? "出" : "入"}
+                  </span>
                 </Link>
               ))}
             </div>

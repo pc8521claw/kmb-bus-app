@@ -12,6 +12,7 @@ import {
 import { directionText } from "@/lib/types";
 import StopList from "@/components/StopList";
 import FavoriteButton from "@/components/FavoriteButton";
+import RecentTracker from "@/components/RecentTracker";
 
 interface PageProps {
   params: Promise<{
@@ -64,6 +65,8 @@ export default async function RoutePage({ params }: PageProps) {
 
   return (
     <main className="flex-1 flex flex-col px-4 py-6 sm:py-8">
+      {/* 自動記錄到 recent searches */}
+      <RecentTracker route={route} direction={direction} />
       <div className="w-full max-w-2xl mx-auto">
         {/* Back link */}
         <Link
