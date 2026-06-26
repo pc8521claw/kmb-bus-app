@@ -349,7 +349,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-stone-900 opacity-50 space-y-0.5">
           <div>即時班次：{company === "KMB" ? "九巴開放數據 API" : "城巴開放數據 API"}</div>
-          <div>車費及服務時間：hk-bus-crawling（每日更新）</div>
+          <div>車費及服務時間：hk-bus-crawling</div>
         </div>
       </div>
     </main>

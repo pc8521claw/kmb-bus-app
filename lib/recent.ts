@@ -1,13 +1,13 @@
 // 最近搜尋路線 (Recent Searches) 管理 - localStorage
 //
 // 規則:
-// - 最多保留 10 條
+// - 最多保留 12 條
 // - 去重：相同 (company + route + direction) 只保留最新一條
 // - 順序：最近撳嘅排最前 (timestamp desc)
 // - 每次訪問 `/route/{route}/{direction}?company=...` page 時自動記錄
 
 const STORAGE_KEY = "kmb-re…ches";
-const MAX_ENTRIES = 10;
+const MAX_ENTRIES = 12;
 
 export type Company = "KMB" | "CTB";
 
