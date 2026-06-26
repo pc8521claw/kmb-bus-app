@@ -58,10 +58,12 @@ const directionToBound = (direction: Direction): Bound =>
   direction === "inbound" ? "I" : "O";
 
 /**
- * 根據 route + direction + serviceType 揾到對應嘅 KMB fare entry
- * 用 (route, bound.kmb, serviceType) 三個 key 嚟 match
+ * 根據 route + direction + serviceType 拎對應嘅 fare entry
+ * 支援多公司: kmb / ctb / gmb / nlb
+ * 用 (route, bound[company], serviceType) 三個 key 嚟 match
  */
-function findKmbEntry(
+function findEntry(
+  company: "kmb" | "ctb" | "gmb" | "nlb",
   route: string,
   direction: Direction,
   serviceType: string
@@ -70,8 +72,8 @@ function findKmbEntry(
   for (const entry of Object.values(FARE_DATA.routeList)) {
     if (
       entry.route === route &&
-      entry.co.includes("kmb") &&
-      entry.bound.kmb === targetBound &&
+      entry.co.includes(company) &&
+      entry.bound[company] === targetBound &&
       String(entry.serviceType) === String(serviceType)
     ) {
       return entry;
@@ -94,11 +96,12 @@ function formatHHMM(hhmm: string): string {
  * @returns HK$ value (e.g., "10.80") or null if no data
  */
 export function getFullFare(
+  company: "kmb" | "ctb" | "gmb" | "nlb" = "kmb",
   route: string,
   direction: Direction,
   serviceType: string = "1"
 ): string | null {
-  const entry = findKmbEntry(route, direction, serviceType);
+  const entry = findEntry(company, route, direction, serviceType);
   if (!entry || !entry.fares || entry.fares.length === 0) return null;
   const max = Math.max(...entry.fares.map(Number));
   return max.toFixed(2);
@@ -108,11 +111,12 @@ export function getFullFare(
  * 分段車費（按段收費列表）
  */
 export function getSectionFares(
+  company: "kmb" | "ctb" | "gmb" | "nlb" = "kmb",
   route: string,
   direction: Direction,
   serviceType: string = "1"
 ): string[] | null {
-  const entry = findKmbEntry(route, direction, serviceType);
+  const entry = findEntry(company, route, direction, serviceType);
   if (!entry || !entry.fares) return null;
   return entry.fares;
 }
@@ -123,11 +127,12 @@ export function getSectionFares(
  * 每個 slot: { startTime, endTime, frequencyMin }
  */
 export function getSchedule(
+  company: "kmb" | "ctb" | "gmb" | "nlb" = "kmb",
   route: string,
   direction: Direction,
   serviceType: string = "1"
 ): ScheduleSlot[] | null {
-  const entry = findKmbEntry(route, direction, serviceType);
+  const entry = findEntry(company, route, direction, serviceType);
   if (!entry || !entry.freq || Object.keys(entry.freq).length === 0) return null;
 
   // 合併所有 serviceDay 嘅時段 (用 startTime 去重)
@@ -169,11 +174,12 @@ export function getSchedule(
  * 從 schedule 抽出首班車 + 尾班車時間
  */
 export function getServiceHours(
+  company: "kmb" | "ctb" | "gmb" | "nlb" = "kmb",
   route: string,
   direction: Direction,
   serviceType: string = "1"
 ): { firstBus: string; lastBus: string } | null {
-  const schedule = getSchedule(route, direction, serviceType);
+  const schedule = getSchedule(company, route, direction, serviceType);
   if (!schedule || schedule.length === 0) return null;
   return {
     firstBus: schedule[0].startTime,

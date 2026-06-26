@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  fetchRouteInfo,
-  fetchStopsWithNames,
+  fetchRouteInfo as fetchKmbRouteInfo,
+  fetchStopsWithNames as fetchKmbStopsWithNames,
 } from "@/lib/kmb-api";
+import {
+  fetchCtbRouteInfo,
+  fetchCtbStopsWithNames,
+} from "@/lib/ctb-api";
 import {
   getFullFare,
   getSchedule,
@@ -14,26 +18,105 @@ import StopList from "@/components/StopList";
 import FavoriteButton from "@/components/FavoriteButton";
 import RecentTracker from "@/components/RecentTracker";
 
+type Company = "KMB" | "CTB";
+
 interface PageProps {
   params: Promise<{
     route: string;
     direction: string;
   }>;
+  searchParams: Promise<{
+    company?: string;
+  }>;
 }
 
-export default async function RoutePage({ params }: PageProps) {
+interface NormalizedRouteInfo {
+  route: string;
+  bound: "I" | "O";
+  orig_tc: string;
+  orig_en: string;
+  dest_tc: string;
+  dest_en: string;
+  service_type: string;
+}
+
+interface NormalizedStop {
+  route: string;
+  bound: "I" | "O";
+  service_type: string;
+  seq: string;
+  stop: string;
+  name_tc: string;
+  name_en: string;
+  lat: string;
+  long: string;
+}
+
+export default async function RoutePage({ params, searchParams }: PageProps) {
   const { route, direction } = await params;
+  const { company: companyParam } = await searchParams;
+  const company: Company = companyParam === "CTB" ? "CTB" : "KMB";
 
   // 驗證 direction
   if (direction !== "inbound" && direction !== "outbound") {
     notFound();
   }
 
-  // 並行 fetch：路線 + 所有站點
-  const [routeInfo, stops] = await Promise.all([
-    fetchRouteInfo(route, direction),
-    fetchStopsWithNames(route, direction),
-  ]);
+  // Dispatch KMB / CTB API
+  let routeInfo: NormalizedRouteInfo | null = null;
+  let stops: NormalizedStop[] = [];
+
+  if (company === "KMB") {
+    const kmbInfo = await fetchKmbRouteInfo(route, direction);
+    if (kmbInfo) {
+      routeInfo = {
+        route: kmbInfo.route,
+        bound: kmbInfo.bound,
+        orig_tc: kmbInfo.orig_tc,
+        orig_en: kmbInfo.orig_en,
+        dest_tc: kmbInfo.dest_tc,
+        dest_en: kmbInfo.dest_en,
+        service_type: kmbInfo.service_type,
+      };
+    }
+    const kmbStops = await fetchKmbStopsWithNames(route, direction);
+    stops = kmbStops.map((s) => ({
+      route: s.route,
+      bound: s.bound,
+      service_type: s.service_type,
+      seq: s.seq,
+      stop: s.stop,
+      name_tc: s.name_tc,
+      name_en: s.name_en,
+      lat: s.lat,
+      long: s.long,
+    }));
+  } else {
+    const ctbInfo = await fetchCtbRouteInfo(route);
+    if (ctbInfo) {
+      routeInfo = {
+        route: ctbInfo.route,
+        bound: direction === "inbound" ? "I" : "O",
+        orig_tc: ctbInfo.orig_tc,
+        orig_en: ctbInfo.orig_en,
+        dest_tc: ctbInfo.dest_tc,
+        dest_en: ctbInfo.dest_en,
+        service_type: "1",
+      };
+    }
+    const ctbStops = await fetchCtbStopsWithNames(route, direction);
+    stops = ctbStops.map((s) => ({
+      route: s.route,
+      bound: s.dir,
+      service_type: "1",
+      seq: String(s.seq),
+      stop: s.stop,
+      name_tc: s.name_tc,
+      name_en: s.name_en,
+      lat: s.lat,
+      long: s.long,
+    }));
+  }
 
   // 路線唔存在
   if (!routeInfo) {
@@ -59,14 +142,20 @@ export default async function RoutePage({ params }: PageProps) {
   const serviceType = routeInfo.service_type;
 
   // 取得車費 + 服務時間數據 (從本地 hk-bus-crawling data)
-  const fullFare = getFullFare(route, direction, serviceType);
-  const schedule = getSchedule(route, direction, serviceType);
-  const serviceHours = getServiceHours(route, direction, serviceType);
+  // hk-bus-crawling 嘅 co 用 lowercase: "kmb" / "ctb"
+  const fareCompany = company.toLowerCase() as "kmb" | "ctb";
+  const fullFare = getFullFare(fareCompany, route, direction, serviceType);
+  const schedule = getSchedule(fareCompany, route, direction, serviceType);
+  const serviceHours = getServiceHours(fareCompany, route, direction, serviceType);
 
   return (
     <main className="flex-1 flex flex-col px-4 py-6 sm:py-8">
       {/* 自動記錄到 recent searches */}
-      <RecentTracker route={route} direction={direction} />
+      <RecentTracker
+        route={route}
+        direction={direction}
+        company={company}
+      />
       <div className="w-full max-w-2xl mx-auto">
         {/* Back link */}
         <Link
@@ -82,11 +171,20 @@ export default async function RoutePage({ params }: PageProps) {
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="inline-block px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded">
+                <span
+                  className={`inline-block px-2.5 py-1 text-xs font-medium rounded ${
+                    company === "KMB"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-blue-100 text-blue-700"
+                  }`}
+                >
+                  {company}
+                </span>
+                <span className="inline-block px-2.5 py-1 bg-stone-100 text-stone-700 text-xs font-medium rounded">
                   {dir.tc} · {dir.en}
                 </span>
                 <Link
-                  href={`/route/${routeInfo.route}/${routeInfo.bound === "O" ? "inbound" : "outbound"}`}
+                  href={`/route/${routeInfo.route}/${routeInfo.bound === "O" ? "inbound" : "outbound"}?company=${company}`}
                   className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-700 text-xs font-medium rounded hover:bg-red-100 transition-colors"
                 >
                   <span>↔</span>
@@ -97,7 +195,10 @@ export default async function RoutePage({ params }: PageProps) {
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                   路線 {routeInfo.route}
                 </h1>
-                <FavoriteButton route={routeInfo.route} />
+                <FavoriteButton
+                  route={routeInfo.route}
+                  company={company}
+                />
               </div>
             </div>
             <div className="text-right text-sm">
@@ -237,13 +338,17 @@ export default async function RoutePage({ params }: PageProps) {
               stops={stops}
               route={routeInfo.route}
               serviceType={String(serviceType) === "2" ? 2 : 1}
+              company={company}
             />
           )}
         </div>
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-stone-900 opacity-50">
-          數據來源：九巴開放數據 API + hk-bus-crawling
+          數據來源：
+          {company === "KMB"
+            ? "九巴開放數據 API + hk-bus-crawling"
+            : "Citybus 開放數據 + hk-bus-crawling"}
         </div>
       </div>
     </main>
@@ -251,11 +356,13 @@ export default async function RoutePage({ params }: PageProps) {
 }
 
 // Metadata
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params, searchParams }: PageProps) {
   const { route, direction } = await params;
+  const { company: companyParam } = await searchParams;
+  const company = companyParam === "CTB" ? "CTB" : "KMB";
   const dir = direction === "inbound" ? "入境" : "出境";
   return {
-    title: `路線 ${route} (${dir}) | KMB 巴士路線查詢`,
-    description: `KMB 路線 ${route} ${dir} 站點同預計到站時間`,
+    title: `路線 ${route} (${dir}) | ${company} 巴士路線查詢`,
+    description: `${company} 路線 ${route} ${dir} 站點同預計到站時間`,
   };
 }

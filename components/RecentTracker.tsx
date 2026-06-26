@@ -4,17 +4,18 @@
 // Render null (no UI impact)
 
 import { useEffect } from "react";
-import { addRecent } from "@/lib/recent";
+import { addRecent, type Company } from "@/lib/recent";
 
 interface RecentTrackerProps {
   route: string;
   direction: "inbound" | "outbound";
+  company: Company;
 }
 
-export default function RecentTracker({ route, direction }: RecentTrackerProps) {
+export default function RecentTracker({ route, direction, company }: RecentTrackerProps) {
   useEffect(() => {
-    addRecent(route, direction);
-  }, [route, direction]);
+    addRecent(company, route, direction);
+  }, [company, route, direction]);
 
   return null;
 }

@@ -2,14 +2,17 @@
 //
 // 規則:
 // - 最多保留 10 條
-// - 去重：相同 route + direction 只保留最新一條 (timestamp 更新)
+// - 去重：相同 (company + route + direction) 只保留最新一條
 // - 順序：最近撳嘅排最前 (timestamp desc)
-// - 每次訪問 `/route/{route}/{direction}` page 時自動記錄
+// - 每次訪問 `/route/{route}/{direction}?company=...` page 時自動記錄
 
-const STORAGE_KEY = "kmb-recent-searches";
+const STORAGE_KEY = "kmb-re…ches";
 const MAX_ENTRIES = 10;
 
+export type Company = "KMB" | "CTB";
+
 export interface RecentSearch {
+  company: Company;
   route: string;
   direction: "inbound" | "outbound";
   timestamp: number;
@@ -19,7 +22,12 @@ export function getRecent(): RecentSearch[] {
   if (typeof window === "undefined") return [];
   try {
     const entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    return entries.sort(
+    // 兼容舊格式 (無 company) — 默認 KMB
+    const normalized = entries.map((e: RecentSearch) => ({
+      ...e,
+      company: e.company || "KMB",
+    }));
+    return normalized.sort(
       (a: RecentSearch, b: RecentSearch) => b.timestamp - a.timestamp
     );
   } catch {
@@ -29,19 +37,21 @@ export function getRecent(): RecentSearch[] {
 
 /**
  * 加入或更新一條 recent search
- * - 相同 route+direction 會搬去最前 + 更新 timestamp
+ * - 相同 (company + route + direction) 會搬去最前 + 更新 timestamp
  * - 超過 MAX_ENTRIES 會自動刪除最舊
  */
 export function addRecent(
+  company: Company,
   route: string,
   direction: "inbound" | "outbound"
 ): RecentSearch[] {
   const current = getRecent();
-  // 去重：filter 走相同 route+direction 嘅舊 entry
+  // 去重
   const filtered = current.filter(
-    (e) => !(e.route === route && e.direction === direction)
+    (e) => !(e.company === company && e.route === route && e.direction === direction)
   );
   const newEntry: RecentSearch = {
+    company,
     route,
     direction,
     timestamp: Date.now(),
@@ -52,12 +62,13 @@ export function addRecent(
 }
 
 export function removeRecent(
+  company: Company,
   route: string,
   direction: "inbound" | "outbound"
 ): RecentSearch[] {
   const current = getRecent();
   const updated = current.filter(
-    (e) => !(e.route === route && e.direction === direction)
+    (e) => !(e.company === company && e.route === route && e.direction === direction)
   );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   return updated;

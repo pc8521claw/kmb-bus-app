@@ -26,6 +26,7 @@ interface StopListProps {
   stops: StopWithName[];
   route: string;
   serviceType: ServiceType;
+  company?: "KMB" | "CTB";
 }
 
 interface EtaState {
@@ -37,7 +38,7 @@ interface EtaState {
 
 const REFRESH_INTERVAL_MS = 30_000;  // 30 秒
 
-export default function StopList({ stops, route, serviceType }: StopListProps) {
+export default function StopList({ stops, route, serviceType, company = "KMB" }: StopListProps) {
   const [etaMap, setEtaMap] = useState<Record<string, EtaState>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const etaMapRef = useRef(etaMap);
@@ -146,7 +147,7 @@ export default function StopList({ stops, route, serviceType }: StopListProps) {
       activeIds.map(async (stopId) => {
         try {
           const res = await fetch(
-            `/api/eta?stopId=${stopId}&route=${route}&serviceType=${serviceType}`
+            `/api/eta?stopId=${stopId}&route=${route}&serviceType=${serviceType}&company=${company}`
           );
           if (res.ok) {
             const json = await res.json();

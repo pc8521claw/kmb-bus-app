@@ -1,31 +1,77 @@
 // 常用路線（favorites）管理 - localStorage
+// 格式: { "KMB-58M": true, "CTB-720": true }
+// 用 company-route 格式避免 KMB / CTB 重疊路線衝突
 
-const STORAGE_KEY = "kmb-favorites";
+const STORAGE_KEY = "***";
 
-export function getFavorites(): string[] {
+export type Company = "KMB" | "CTB";
+
+function makeKey(company: Company, route: string): string {
+  return `${company}-${route}`;
+}
+
+export function getFavorites(): Array<{ company: Company; route: string }> {
   if (typeof window === "undefined") return [];
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    // 兼容舊格式 (array of route strings) — 默認 KMB
+    if (Array.isArray(stored)) {
+      return stored.map((r) => ({
+        company: "KMB" as Company,
+        route: r,
+      }));
+    }
+    return Object.keys(stored)
+      .filter((k) => stored[k])
+      .map((k) => {
+        const [company, ...routeParts] = k.split("-");
+        return {
+          company: (company as Company) || "KMB",
+          route: routeParts.join("-"), // 處理 route 入面有 '-' 嘅情況
+        };
+      });
   } catch {
     return [];
   }
 }
 
-export function addFavorite(route: string): string[] {
+export function addFavorite(company: Company, route: string): void {
   const current = getFavorites();
-  if (current.includes(route)) return current;
-  const updated = [...current, route];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  return updated;
+  if (current.some((f) => f.company === company && f.route === route)) return;
+  const stored = readStorage();
+  stored[makeKey(company, route)] = true;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 }
 
-export function removeFavorite(route: string): string[] {
-  const current = getFavorites();
-  const updated = current.filter((r) => r !== route);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  return updated;
+export function removeFavorite(company: Company, route: string): void {
+  const stored = readStorage();
+  delete stored[makeKey(company, route)];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 }
 
-export function isFavorite(route: string): boolean {
-  return getFavorites().includes(route);
+export function isFavorite(company: Company, route: string): boolean {
+  const stored = readStorage();
+  return Boolean(stored[makeKey(company, route)]);
+}
+
+function readStorage(): Record<string, boolean> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    // 兼容舊格式 (array)
+    if (Array.isArray(parsed)) {
+      const result: Record<string, boolean> = {};
+      parsed.forEach((r) => {
+        if (typeof r === "string") {
+          result[`KMB-${r}`] = true;
+        }
+      });
+      return result;
+    }
+    return parsed;
+  } catch {
+    return {};
+  }
 }

@@ -10,10 +10,16 @@ export default function Home() {
   const router = useRouter();
   const [route, setRoute] = useState("");
   const [direction, setDirection] = useState<"outbound" | "inbound">("outbound");
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<Array<{ company: "KMB" | "CTB"; route: string }>>([]);
   const [recent, setRecent] = useState<RecentSearch[]>([]);
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
+  const [searchResults, setSearchResults] = useState<Array<{
+    company: "KMB" | "CTB";
+    route: string;
+    orig_tc: string;
+    dest_tc: string;
+  }> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Load favorites + recent from localStorage
@@ -41,14 +47,15 @@ export default function Home() {
 
     setError("");
     setChecking(true);
+    setSearchResults(null);
 
     try {
-      // 檢查路線是否存在
+      // 檢查路線是否存在 (KMB + Citybus 並行)
       const res = await fetch(
         `/api/check-route?route=${encodeURIComponent(trimmed)}&direction=${direction}`
       );
       if (res.status === 404) {
-        setError("錯誤的路線號碼");
+        setError("搵唔到呢條路線（KMB / Citybus 都冇）");
         setChecking(false);
         return;
       }
@@ -57,8 +64,26 @@ export default function Home() {
         setChecking(false);
         return;
       }
-      // 路線存在，導航
-      router.push(`/route/${encodeURIComponent(trimmed)}/${direction}`);
+      const data = await res.json();
+      const results = data.results as Array<{
+        company: "KMB" | "CTB";
+        route: string;
+        orig_tc: string;
+        dest_tc: string;
+      }>;
+
+      // 只有一個 result: auto navigate
+      if (results.length === 1) {
+        const r = results[0];
+        router.push(
+          `/route/${encodeURIComponent(trimmed)}/${direction}?company=${r.company}`
+        );
+        return;
+      }
+
+      // 多個 result: 顯示 selection UI
+      setSearchResults(results);
+      setChecking(false);
     } catch (e) {
       setError("網絡錯誤，請稍後再試");
       setChecking(false);
@@ -161,6 +186,45 @@ export default function Home() {
           </button>
         </form>
 
+        {/* 搜尋結果 (多公司 selection) */}
+        {searchResults && searchResults.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-sm font-medium text-stone-900 mb-3 text-center">
+              撳你想查嘅路線
+            </h2>
+            <div className="space-y-2">
+              {searchResults.map((r) => (
+                <Link
+                  key={`${r.company}-${r.route}`}
+                  href={`/route/${encodeURIComponent(r.route)}/${direction}?company=${r.company}`}
+                  className="block bg-white rounded-xl border border-stone-200 p-4 hover:border-blue-400 hover:shadow-sm transition-all"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className={`inline-block px-2 py-0.5 text-xs font-medium rounded ${
+                            r.company === "KMB"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {r.company}
+                        </span>
+                        <span className="font-medium text-lg">{r.route}</span>
+                      </div>
+                      <div className="text-sm text-stone-900">
+                        {r.orig_tc} → {r.dest_tc}
+                      </div>
+                    </div>
+                    <span className="text-stone-900 text-xl">→</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 常用路線 (Favorites) */}
         <div className="mt-8">
           <h2 className="text-sm font-medium text-stone-900 mb-3 text-center">
@@ -172,13 +236,18 @@ export default function Home() {
             </p>
           ) : (
             <div className="flex flex-wrap gap-2 justify-center">
-              {favorites.map((r) => (
+              {favorites.map((f) => (
                 <Link
-                  key={r}
-                  href={`/route/${encodeURIComponent(r)}/outbound`}
-                  className="px-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 text-stone-900 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                  key={`${f.company}-${f.route}`}
+                  href={`/route/${encodeURIComponent(f.route)}/outbound?company=${f.company}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 text-stone-900 hover:border-blue-400 hover:text-blue-600 transition-colors"
                 >
-                  {r}
+                  <span
+                    className={`inline-block w-1.5 h-1.5 rounded-full ${
+                      f.company === "KMB" ? "bg-amber-500" : "bg-blue-500"
+                    }`}
+                  />
+                  <span>{f.route}</span>
                 </Link>
               ))}
             </div>
@@ -198,11 +267,16 @@ export default function Home() {
             <div className="flex flex-wrap gap-2 justify-center">
               {recent.map((entry) => (
                 <Link
-                  key={`${entry.route}-${entry.direction}-${entry.timestamp}`}
-                  href={`/route/${encodeURIComponent(entry.route)}/${entry.direction}`}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 text-stone-900 hover:border-blue-400 hover:text-blue-600 transition-colors"
-                  title={`${entry.direction === "outbound" ? "出市區" : "入郊區"}`}
+                  key={`${entry.company}-${entry.route}-${entry.direction}-${entry.timestamp}`}
+                  href={`/route/${encodeURIComponent(entry.route)}/${entry.direction}?company=${entry.company}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full bg-white border border-stone-200 text-stone-900 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                  title={`${entry.company} · ${entry.direction === "outbound" ? "出市區" : "入郊區"}`}
                 >
+                  <span
+                    className={`inline-block w-1.5 h-1.5 rounded-full ${
+                      entry.company === "KMB" ? "bg-amber-500" : "bg-blue-500"
+                    }`}
+                  />
                   <span>{entry.route}</span>
                   <span className="text-xs text-stone-900 opacity-60">
                     {entry.direction === "outbound" ? "出" : "入"}
