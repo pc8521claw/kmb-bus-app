@@ -21,12 +21,22 @@ export interface RecentSearch {
 export function getRecent(): RecentSearch[] {
   if (typeof window === "undefined") return [];
   try {
-    const entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const entries = JSON.parse(raw);
     // 兼容舊格式 (無 company) — 默認 KMB
-    const normalized = entries.map((e: RecentSearch) => ({
-      ...e,
-      company: e.company || "KMB",
-    }));
+    // 順便 migrate 落新格式寫返
+    let needsMigrate = false;
+    const normalized = entries.map((e: RecentSearch) => {
+      if (!e.company) {
+        needsMigrate = true;
+        return { ...e, company: "KMB" };
+      }
+      return e;
+    });
+    if (needsMigrate) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    }
     return normalized.sort(
       (a: RecentSearch, b: RecentSearch) => b.timestamp - a.timestamp
     );

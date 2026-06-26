@@ -13,9 +13,17 @@ function makeKey(company: Company, route: string): string {
 export function getFavorites(): Array<{ company: Company; route: string }> {
   if (typeof window === "undefined") return [];
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const stored = JSON.parse(raw);
     // 兼容舊格式 (array of route strings) — 默認 KMB
+    // 順便 migrate 落新 object format 寫返
     if (Array.isArray(stored)) {
+      const migrated: Record<string, boolean> = {};
+      stored.forEach((r) => {
+        if (typeof r === "string") migrated[`KMB-${r}`] = true;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
       return stored.map((r) => ({
         company: "KMB" as Company,
         route: r,
