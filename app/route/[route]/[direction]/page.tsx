@@ -170,7 +170,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-5 sm:p-6 mb-4">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-3 mb-2">
                 <span
                   className={`inline-block px-2.5 py-1 text-xs font-medium rounded ${
                     company === "KMB"
@@ -180,6 +180,15 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
                 >
                   {company}
                 </span>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  路線 {routeInfo.route}
+                </h1>
+                <FavoriteButton
+                  route={routeInfo.route}
+                  company={company}
+                />
+              </div>
+              <div className="flex items-center gap-2">
                 <span className="inline-block px-2.5 py-1 bg-stone-100 text-stone-700 text-xs font-medium rounded">
                   {dir.tc} · {dir.en}
                 </span>
@@ -190,15 +199,6 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
                   <span>↔</span>
                   <span>改變方向</span>
                 </Link>
-              </div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  路線 {routeInfo.route}
-                </h1>
-                <FavoriteButton
-                  route={routeInfo.route}
-                  company={company}
-                />
               </div>
             </div>
             <div className="text-right text-sm">
