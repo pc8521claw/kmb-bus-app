@@ -292,11 +292,6 @@ export default function StopList({ stops, route, serviceType, company = "KMB" }:
                               minute: "2-digit",
                             })})
                           </span>
-                          {e.dest_tc && (
-                            <span className="text-xs text-stone-900 font-medium">
-                              開往 {e.dest_tc}
-                            </span>
-                          )}
                           {e.rmk_tc && (
                             <span className="text-xs text-stone-900">
                               {e.rmk_tc}
