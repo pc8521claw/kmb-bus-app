@@ -55,6 +55,11 @@ export interface EtaInfo {
   rmk_en: string;
   rmk_sc: string;
   data_timestamp: string;
+  // Citybus 額外 fields (可選)
+  dest_tc?: string;
+  dest_en?: string;
+  dest_sc?: string;
+  eta_seq?: number;
 }
 
 // Combined type for stop list display

@@ -94,13 +94,16 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   } else {
     const ctbInfo = await fetchCtbRouteInfo(route);
     if (ctbInfo) {
+      // CTB route info 唔分方向；inbound 嗰陣要 swap orig/dest
+      // fetchCtbRouteInfo() 返嘅 orig = outbound 嘅起點, dest = outbound 嘅終點
+      const isInbound = direction === "inbound";
       routeInfo = {
         route: ctbInfo.route,
-        bound: direction === "inbound" ? "I" : "O",
-        orig_tc: ctbInfo.orig_tc,
-        orig_en: ctbInfo.orig_en,
-        dest_tc: ctbInfo.dest_tc,
-        dest_en: ctbInfo.dest_en,
+        bound: isInbound ? "I" : "O",
+        orig_tc: isInbound ? ctbInfo.dest_tc : ctbInfo.orig_tc,
+        orig_en: isInbound ? ctbInfo.dest_en : ctbInfo.orig_en,
+        dest_tc: isInbound ? ctbInfo.orig_tc : ctbInfo.dest_tc,
+        dest_en: isInbound ? ctbInfo.orig_en : ctbInfo.dest_en,
         service_type: "1",
       };
     }

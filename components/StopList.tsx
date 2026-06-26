@@ -272,7 +272,9 @@ export default function StopList({ stops, route, serviceType, company = "KMB" }:
                     <div className="text-red-500 text-xs">{state.error}</div>
                   )}
                   {hasEta && etas.length === 0 && (
-                    <div className="text-stone-900 text-xs">暫無 ETA 資料</div>
+                    <div className="text-stone-900 text-xs">
+                      而家冇班車 (可能服務時間外)
+                    </div>
                   )}
                   {hasEta && etas.length > 0 && (
                     <div className="space-y-1">
@@ -290,6 +292,11 @@ export default function StopList({ stops, route, serviceType, company = "KMB" }:
                               minute: "2-digit",
                             })})
                           </span>
+                          {e.dest_tc && (
+                            <span className="text-xs text-stone-900 font-medium">
+                              開往 {e.dest_tc}
+                            </span>
+                          )}
                           {e.rmk_tc && (
                             <span className="text-xs text-stone-900">
                               {e.rmk_tc}
