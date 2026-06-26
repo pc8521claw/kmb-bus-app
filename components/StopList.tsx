@@ -58,7 +58,7 @@ export default function StopList({ stops, route, serviceType, company = "KMB" }:
 
     try {
       const res = await fetch(
-        `/api/eta?stopId=${stopId}&route=${route}&serviceType=${serviceType}`
+        `/api/eta?stopId=${stopId}&route=${route}&serviceType=${serviceType}&company=${company}`
       );
       if (!res.ok) throw new Error("ETA 查詢失敗");
       const json = await res.json();
