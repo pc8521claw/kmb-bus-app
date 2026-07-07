@@ -51,7 +51,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboard();
-    // Auto-refresh every 30 seconds
     const interval = setInterval(fetchDashboard, 30000);
     return () => clearInterval(interval);
   }, [fetchDashboard]);
