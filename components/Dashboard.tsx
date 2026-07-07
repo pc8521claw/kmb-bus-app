@@ -49,6 +49,7 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Re-fetch when component mounts (favorites may have changed)
   useEffect(() => {
     fetchDashboard();
     const interval = setInterval(fetchDashboard, 30000);
