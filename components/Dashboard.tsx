@@ -292,8 +292,9 @@ export default function Dashboard() {
                           {item.route}
                         </span>
                       </div>
-                      <div className="text-xs text-blue-600 font-bold">
-                        → {item.dest_tc}
+                      <div className="text-blue-600">
+                        <span className="text-xs">往 </span>
+                        <span className="text-base font-bold">{item.dest_tc}</span>
                       </div>
                       <div className="text-xs text-stone-900 opacity-60 mt-0.5">
                         📍 {item.stopName}
