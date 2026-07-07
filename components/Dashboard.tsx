@@ -23,6 +23,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [touchDragIndex, setTouchDragIndex] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number>(0);
 
   // Format ETA like StopList: "X分鐘" + "(下午HH:MM)"
   const formatEta = (etaStr: string | null) => {
@@ -85,7 +87,7 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [fetchDashboard]);
 
-  // Drag and drop handlers
+  // Mouse drag handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = "move";
@@ -123,6 +125,52 @@ export default function Dashboard() {
 
   const handleDragEnd = () => {
     setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // Touch drag handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent, index: number) => {
+    setTouchDragIndex(index);
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchDragIndex === null) return;
+    e.preventDefault();
+
+    const touch = e.touches[0];
+    const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+    const dropTarget = elements.find(el => el.hasAttribute('data-drag-index'));
+
+    if (dropTarget) {
+      const dropIndex = parseInt(dropTarget.getAttribute('data-drag-index') || '0', 10);
+      if (dropIndex !== dragOverIndex && dropIndex !== touchDragIndex) {
+        setDragOverIndex(dropIndex);
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (touchDragIndex === null || dragOverIndex === null || touchDragIndex === dragOverIndex) {
+      setTouchDragIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newItems = [...items];
+    const [draggedItem] = newItems.splice(touchDragIndex, 1);
+    newItems.splice(dragOverIndex, 0, draggedItem);
+    setItems(newItems);
+
+    // Persist new order to localStorage
+    const orderMap: Record<string, number> = {};
+    newItems.forEach((item, i) => {
+      const key = `${item.company}-${item.route}-${item.stopId}`;
+      orderMap[key] = i;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(orderMap));
+
+    setTouchDragIndex(null);
     setDragOverIndex(null);
   };
 
@@ -181,11 +229,15 @@ export default function Dashboard() {
             <div
               key={`${item.company}-${item.route}-${item.stopId}`}
               draggable
+              data-drag-index={index}
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDrop={(e) => handleDrop(e, index)}
               onDragEnd={handleDragEnd}
-              className={`bg-white rounded-xl border transition-all ${
+              onTouchStart={(e) => handleTouchStart(e, index)}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={() => handleTouchEnd()}
+              className={`bg-white rounded-xl border transition-all touch-none ${
                 isDragging
                   ? "border-blue-400 opacity-50 shadow-lg scale-[1.02]"
                   : isDragOver
