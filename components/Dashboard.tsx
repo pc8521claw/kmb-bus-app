@@ -312,13 +312,13 @@ export default function Dashboard() {
                         >
                           {item.company}
                         </span>
-                        <span className="text-xl font-bold text-stone-900">
+                        <span className="text-2xl font-bold text-stone-900">
                           {item.route}
                         </span>
                       </div>
                       <div className="text-blue-600">
                         <span className="text-xs">往 </span>
-                        <span className="text-base font-bold">{item.dest_tc}</span>
+                        <span className="text-lg font-bold">{item.dest_tc}</span>
                       </div>
                       <div className="text-xs text-stone-900 opacity-60 mt-0.5">
                         📍 {item.stopName}
