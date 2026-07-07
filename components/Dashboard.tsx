@@ -188,13 +188,13 @@ export default function Dashboard() {
                 >
                   {refreshing === `${item.company}-${item.route}` ? "..." : "刷新"}
                 </button>
-                <div className="text-lg font-bold text-green-600">
-                  {item.eta || "—"}
-                </div>
+                <span className="text-green-600 font-medium">
+                  🚌 {item.eta || "—"}
+                </span>
                 {(() => {
                   const t = formatTime(item.etaTime);
                   return t ? (
-                    <div className="text-xs text-stone-900 opacity-60">{t}</div>
+                    <span className="text-xs text-stone-900"> ({t})</span>
                   ) : null;
                 })()}
               </div>
