@@ -12,6 +12,20 @@ type ViewMode = "search" | "dashboard";
 export default function Home() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("search");
+
+  // Load saved mode from localStorage (default: search)
+  useEffect(() => {
+    const saved = localStorage.getItem("kmb-view-mode");
+    if (saved === "search" || saved === "dashboard") {
+      setViewMode(saved);
+    }
+  }, []);
+
+  // Save mode to localStorage when it changes
+  const handleSetViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem("kmb-view-mode", mode);
+  };
   const [route, setRoute] = useState("");
   const [direction, setDirection] = useState<"outbound" | "inbound">("outbound");
   const [favorites, setFavorites] = useState<Array<{ company: "KMB" | "CTB"; route: string }>>([]);
@@ -110,7 +124,7 @@ export default function Home() {
           {/* View Mode Toggle */}
           <div className="flex items-center bg-stone-100 rounded-lg p-1">
             <button
-              onClick={() => setViewMode("search")}
+              onClick={() => handleSetViewMode("search")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                 viewMode === "search"
                   ? "bg-white text-stone-900 shadow-sm"
@@ -121,15 +135,15 @@ export default function Home() {
               🔍 搜尋
             </button>
             <button
-              onClick={() => setViewMode("dashboard")}
+              onClick={() => handleSetViewMode("dashboard")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                 viewMode === "dashboard"
                   ? "bg-white text-stone-900 shadow-sm"
                   : "text-stone-600 hover:text-stone-900"
               }`}
-              title="Dashboard 模式"
+              title="監察名單模式"
             >
-              📊 Dashboard
+              📊 監察名單
             </button>
           </div>
         </div>
