@@ -35,7 +35,7 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/dashboard/route?favorites=${encodeURIComponent(JSON.stringify(favs))}`
+        `/api/dashboard?favorites=${encodeURIComponent(JSON.stringify(favs))}`
       );
       if (res.ok) {
         const data = await res.json();
@@ -64,7 +64,7 @@ export default function Dashboard() {
     const single = favs.filter((f) => f.company === company && f.route === route);
     try {
       const res = await fetch(
-        `/api/dashboard/route?favorites=${encodeURIComponent(JSON.stringify(single))}`
+        `/api/dashboard?favorites=${encodeURIComponent(JSON.stringify(single))}`
       );
       if (res.ok) {
         const data = await res.json();
