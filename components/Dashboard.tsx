@@ -213,15 +213,15 @@ export default function Dashboard() {
               onClick={() => setEditMode(!editMode)}
               className={`px-2 py-0.5 text-xs font-medium rounded-md transition-all ${
                 editMode
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-green-100 text-green-700"
                   : "bg-stone-100 text-stone-600 hover:bg-stone-200"
               }`}
             >
-              {editMode ? "🔒 鎖定" : "✏️ 排序"}
+              {editMode ? "排序" : "✏️ 排序"}
             </button>
-            {editMode && (
-              <span className="text-xs text-stone-900 opacity-60">長按拖動排序</span>
-            )}
+            <span className="text-xs text-stone-900 opacity-60">
+              {editMode ? "拖動排序" : "長按拖動排序"}
+            </span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
