@@ -15,6 +15,7 @@ interface WatchItem {
   direction: Direction;
   stopId: string;
   stopName: string;
+  dest_tc?: string;
 }
 
 interface DashboardResult {
@@ -23,6 +24,7 @@ interface DashboardResult {
   direction: Direction;
   stopId: string;
   stopName: string;
+  dest_tc: string;
   eta: string | null;
   etaTime: string | null;
   error?: string;
@@ -31,7 +33,11 @@ interface DashboardResult {
 function formatEta(etaStr: string | null): { eta: string; etaTime: string | null } {
   if (!etaStr) return { eta: "無班", etaTime: null };
   try {
-    const etaDate = new Date(etaStr);
+    // Parse as Hong Kong local time (API returns CST/UTC+8)
+    const [datePart, timePart] = etaStr.split(" ");
+    const [year, month, day] = datePart.split("/").map(Number);
+    const [hour, minute, second] = timePart.split(":").map(Number);
+    const etaDate = new Date(year, month - 1, day, hour, minute, second);
     const now = new Date();
     const diffMs = etaDate.getTime() - now.getTime();
     const diffMin = Math.round(diffMs / 60000);
@@ -89,6 +95,7 @@ export async function GET(request: NextRequest) {
           direction: watch.direction,
           stopId: watch.stopId,
           stopName: watch.stopName,
+          dest_tc: watch.dest_tc || "",
           eta,
           etaTime,
         };
@@ -99,6 +106,7 @@ export async function GET(request: NextRequest) {
           direction: watch.direction,
           stopId: watch.stopId,
           stopName: watch.stopName,
+          dest_tc: "",
           eta: null,
           etaTime: null,
           error: e instanceof Error ? e.message : "Unknown error",

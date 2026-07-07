@@ -343,6 +343,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
               serviceType={String(serviceType) === "2" ? 2 : 1}
               company={company}
               direction={direction as "inbound" | "outbound"}
+              dest_tc={routeInfo.dest_tc}
             />
           )}
         </div>

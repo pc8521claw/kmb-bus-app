@@ -14,6 +14,7 @@ export interface WatchItem {
   route: string;
   company: Company;
   direction: Direction;
+  dest_tc?: string;
 }
 
 function makeKey(company: Company, route: string, stopId: string): string {

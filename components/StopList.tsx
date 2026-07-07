@@ -29,6 +29,7 @@ interface StopListProps {
   serviceType: ServiceType;
   company?: "KMB" | "CTB";
   direction?: Direction;
+  dest_tc?: string;
 }
 
 interface EtaState {
@@ -40,7 +41,7 @@ interface EtaState {
 
 const REFRESH_INTERVAL_MS = 30_000;  // 30 秒
 
-export default function StopList({ stops, route, serviceType, company = "KMB", direction = "outbound" }: StopListProps) {
+export default function StopList({ stops, route, serviceType, company = "KMB", direction = "outbound", dest_tc = "" }: StopListProps) {
   const [etaMap, setEtaMap] = useState<Record<string, EtaState>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [watchedStopIds, setWatchedStopIds] = useState<Set<string>>(new Set());
@@ -73,6 +74,7 @@ export default function StopList({ stops, route, serviceType, company = "KMB", d
         route,
         company: company as "KMB" | "CTB",
         direction,
+        dest_tc,
       });
       setWatchedStopIds((prev) => new Set(prev).add(stopId));
     }

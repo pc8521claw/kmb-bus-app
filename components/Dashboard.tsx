@@ -10,6 +10,7 @@ interface DashboardItem {
   direction: "inbound" | "outbound";
   stopId: string;
   stopName: string;
+  dest_tc: string;
   eta: string | null;
   etaTime: string | null;
   error?: string;
@@ -159,6 +160,9 @@ export default function Dashboard() {
                   </div>
                   <div className="text-xs text-blue-600 mt-0.5">
                     📍 {item.stopName}
+                  </div>
+                  <div className="text-xs text-stone-900 opacity-60 mt-0.5">
+                    → {item.dest_tc}
                   </div>
                 </div>
               </div>
