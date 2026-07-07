@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [items, setItems] = useState<DashboardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     const favs = getFavorites();
@@ -51,6 +52,7 @@ export default function Dashboard() {
 
   // Re-fetch when component mounts (favorites may have changed)
   useEffect(() => {
+    setMounted(true);
     fetchDashboard();
     const interval = setInterval(fetchDashboard, 30000);
     return () => clearInterval(interval);
