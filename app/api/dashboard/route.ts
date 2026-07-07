@@ -3,8 +3,8 @@
 // 輸出: [{company, route, orig_tc, dest_tc, firstStopId, firstStopName, eta, etaTime, dirEn},...]
 
 import { NextRequest, NextResponse } from "next/server";
-import { fetchRouteStops as fetchKmbStops, fetchRouteInfo as fetchKmbInfo } from "@/lib/kmb-api";
-import { fetchCtbRouteInfo, fetchCtbRouteStops } from "@/lib/ctb-api";
+import { fetchRouteStops as fetchKmbStops, fetchRouteInfo as fetchKmbInfo, fetchStopInfo as fetchKmbStopInfo } from "@/lib/kmb-api";
+import { fetchCtbRouteInfo, fetchCtbRouteStops, fetchCtbStopInfo } from "@/lib/ctb-api";
 import { fetchEta as fetchKmbEta } from "@/lib/kmb-api";
 import { fetchCtbEta } from "@/lib/ctb-api";
 import type { Direction } from "@/lib/types";
@@ -85,7 +85,8 @@ export async function GET(request: NextRequest) {
           const stops = await fetchKmbStops(fav.route, direction);
           if (stops && stops.length > 0) {
             firstStopId = stops[0].stop;
-            firstStopName = "";
+            const stopInfo = await fetchKmbStopInfo(firstStopId);
+            firstStopName = stopInfo?.name_tc || "";
             bound = stops[0].bound;
           }
         } else {
@@ -97,7 +98,8 @@ export async function GET(request: NextRequest) {
           const stops = await fetchCtbRouteStops(fav.route, direction);
           if (stops && stops.length > 0) {
             firstStopId = stops[0].stop;
-            firstStopName = "";
+            const stopInfo = await fetchCtbStopInfo(firstStopId);
+            firstStopName = stopInfo?.name_tc || "";
             bound = stops[0].dir === "O" ? "O" : "I";
             dirEn = stops[0].dir === "O" ? "Outbound" : "Inbound";
           }

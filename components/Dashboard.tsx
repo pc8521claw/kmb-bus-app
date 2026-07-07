@@ -162,6 +162,11 @@ export default function Dashboard() {
                   <div className="text-xs text-stone-900 opacity-70 mt-0.5">
                     {item.orig_tc} → {item.dest_tc}
                   </div>
+                  {item.firstStopName && (
+                    <div className="text-xs text-blue-600 mt-0.5">
+                      📍 {item.firstStopName}
+                    </div>
+                  )}
                 </div>
               </div>
 
