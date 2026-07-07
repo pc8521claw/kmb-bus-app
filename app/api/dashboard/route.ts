@@ -33,42 +33,19 @@ interface DashboardResult {
 function formatEta(etaStr: string | null): { eta: string; etaTime: string | null } {
   if (!etaStr) return { eta: "無班", etaTime: null };
   try {
-    let hour: number, minute: number;
+    // KMB API returns: "2026-07-07T14:30:00+08:00" - new Date() parses this correctly
+    const etaDate = new Date(etaStr);
+    if (isNaN(etaDate.getTime())) return { eta: "無班", etaTime: null };
 
-    if (etaStr.includes("/")) {
-      // Format: 2026/07/07 14:30:00 - parse manually as Hong Kong local time
-      const [, timePart] = etaStr.split(" ");
-      const [h, m] = timePart.split(":").map(Number);
-      hour = h;
-      minute = m;
-    } else {
-      // ISO format
-      const d = new Date(etaStr);
-      if (isNaN(d.getTime())) return { eta: "無班", etaTime: null };
-      hour = d.getHours();
-      minute = d.getMinutes();
-    }
-
-    // Calculate diff - use tomorrow if time has already passed today
     const now = new Date();
-    let etaDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute);
-    let diffMs = etaDate.getTime() - now.getTime();
-    let diffMin = Math.round(diffMs / 60000);
+    const diffMs = etaDate.getTime() - now.getTime();
+    const diffMin = Math.round(diffMs / 60000);
 
-    // If already passed today, use tomorrow's time
-    if (diffMin < 0) {
-      etaDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, hour, minute);
-      diffMs = etaDate.getTime() - now.getTime();
-      diffMin = Math.round(diffMs / 60000);
-    }
-
-    const displayTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-
-    if (diffMin <= 0) return { eta: "即將到站", etaTime: displayTime };
-    if (diffMin < 60) return { eta: `${diffMin}分鐘`, etaTime: displayTime };
+    if (diffMin <= 0) return { eta: "即將到站", etaTime: etaDate.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
+    if (diffMin < 60) return { eta: `${diffMin}分鐘`, etaTime: etaDate.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
     const hours = Math.floor(diffMin / 60);
     const mins = diffMin % 60;
-    return { eta: `${hours}小時${mins}分`, etaTime: displayTime };
+    return { eta: `${hours}小時${mins}分`, etaTime: etaDate.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
   } catch {
     return { eta: "Error", etaTime: null };
   }
