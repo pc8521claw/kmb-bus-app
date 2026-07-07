@@ -24,12 +24,16 @@ export default function Dashboard() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  // Client-side time formatting (same as StopList)
-  const formatTime = (etaStr: string | null) => {
+  // Format ETA like StopList: "X分鐘" + "(下午HH:MM)"
+  const formatEta = (etaStr: string | null) => {
     if (!etaStr) return null;
     const d = new Date(etaStr);
     if (isNaN(d.getTime())) return null;
-    return d.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" });
+    const now = new Date();
+    const diffMs = d.getTime() - now.getTime();
+    const diffMin = Math.round(diffMs / 60000);
+    if (diffMin < 1) return { eta: "即將到站", time: d.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
+    return { eta: `${diffMin}分鐘`, time: d.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
   };
 
   const fetchDashboard = useCallback(async () => {
@@ -232,14 +236,15 @@ export default function Dashboard() {
 
                   {/* ETA */}
                   <div className="text-right">
-                    <span className="text-green-600 font-medium">
-                      🚌 {item.eta || "—"}
-                    </span>
                     {(() => {
-                      const t = formatTime(item.etaTime);
-                      return t ? (
-                        <span className="text-xs text-stone-900"> ({t})</span>
-                      ) : null;
+                      const f = formatEta(item.etaTime);
+                      if (!f) return <span className="text-stone-900">—</span>;
+                      return (
+                        <>
+                          <div className="text-green-600 font-medium">{f.eta}</div>
+                          <div className="text-xs text-stone-900">({f.time})</div>
+                        </>
+                      );
                     })()}
                   </div>
                 </div>
