@@ -2,19 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { getFavorites, type Company } from "@/lib/favorites";
+import { getWatchList, type Company } from "@/lib/watch";
 
 interface DashboardItem {
   company: Company;
   route: string;
-  orig_tc: string;
-  dest_tc: string;
-  firstStopId: string;
-  firstStopName: string;
-  bound: "O" | "I";
+  direction: "inbound" | "outbound";
+  stopId: string;
+  stopName: string;
   eta: string | null;
   etaTime: string | null;
-  dirEn: string;
   error?: string;
 }
 
@@ -22,11 +19,11 @@ export default function Dashboard() {
   const [items, setItems] = useState<DashboardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
-    const favs = getFavorites();
-    if (favs.length === 0) {
+    const watches = getWatchList();
+    const watchArray = Object.values(watches);
+    if (watchArray.length === 0) {
       setItems([]);
       setLoading(false);
       return;
@@ -35,7 +32,7 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/dashboard?favorites=${encodeURIComponent(JSON.stringify(favs))}`
+        `/api/dashboard?watches=${encodeURIComponent(JSON.stringify(watchArray))}`
       );
       if (res.ok) {
         const data = await res.json();
@@ -50,9 +47,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Re-fetch when component mounts (favorites may have changed)
   useEffect(() => {
-    setMounted(true);
     fetchDashboard();
     const interval = setInterval(fetchDashboard, 30000);
     return () => clearInterval(interval);
@@ -60,11 +55,14 @@ export default function Dashboard() {
 
   const handleRefresh = async (company: Company, route: string) => {
     setRefreshing(`${company}-${route}`);
-    const favs = getFavorites();
-    const single = favs.filter((f) => f.company === company && f.route === route);
+    const watches = getWatchList();
+    const single = Object.values(watches).filter(
+      (w) => w.company === company && w.route === route
+    );
+    if (single.length === 0) return;
     try {
       const res = await fetch(
-        `/api/dashboard?favorites=${encodeURIComponent(JSON.stringify(single))}`
+        `/api/dashboard?watches=${encodeURIComponent(JSON.stringify(single))}`
       );
       if (res.ok) {
         const data = await res.json();
@@ -94,9 +92,9 @@ export default function Dashboard() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="text-stone-900 text-lg mb-2">暫無收藏路線</div>
-        <div className="text-stone-900 text-sm opacity-60 mb-6">
-          搜尋路線後，撳 ⭐ 加入收藏
+        <div className="text-stone-900 text-lg mb-2">暫無監察路線</div>
+        <div className="text-stone-900 text-sm opacity-60 mb-6 text-center">
+          搜尋路線後，撳「加入監察」<br />監察特定巴士站
         </div>
         <button
           onClick={() => window.location.href = "/"}
@@ -113,9 +111,9 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-stone-900">收藏路線 ETA</h2>
+          <h2 className="text-xl font-bold text-stone-900">監察路線</h2>
           <p className="text-xs text-stone-900 opacity-60 mt-1">
-            每30秒自動更新 · 顯示第一班
+            每30秒自動更新 · 顯示已選巴士站
           </p>
         </div>
         <button
@@ -132,7 +130,7 @@ export default function Dashboard() {
         {items.map((item) => (
           <Link
             key={`${item.company}-${item.route}`}
-            href={`/route/${encodeURIComponent(item.route)}/outbound?company=${item.company}`}
+            href={`/route/${encodeURIComponent(item.route)}/${item.direction}?company=${item.company}`}
             className="block bg-white rounded-xl border border-stone-200 p-4 hover:border-blue-400 hover:shadow-sm transition-all"
           >
             <div className="flex items-center justify-between gap-4">
@@ -159,14 +157,9 @@ export default function Dashboard() {
                       {item.route}
                     </span>
                   </div>
-                  <div className="text-xs text-stone-900 opacity-70 mt-0.5">
-                    {item.orig_tc} → {item.dest_tc}
+                  <div className="text-xs text-blue-600 mt-0.5">
+                    📍 {item.stopName}
                   </div>
-                  {item.firstStopName && (
-                    <div className="text-xs text-blue-600 mt-0.5">
-                      📍 {item.firstStopName}
-                    </div>
-                  )}
                 </div>
               </div>
 

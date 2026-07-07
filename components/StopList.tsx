@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { StopWithName, ServiceType, EtaInfo } from "@/lib/types";
+import { addWatch, removeWatch, getWatch, type Direction } from "@/lib/watch";
 
 // 取得 platform 對應嘅地圖 URL
 // iOS → Apple Maps (native)
@@ -27,6 +28,7 @@ interface StopListProps {
   route: string;
   serviceType: ServiceType;
   company?: "KMB" | "CTB";
+  direction?: Direction;
 }
 
 interface EtaState {
@@ -38,11 +40,38 @@ interface EtaState {
 
 const REFRESH_INTERVAL_MS = 30_000;  // 30 秒
 
-export default function StopList({ stops, route, serviceType, company = "KMB" }: StopListProps) {
+export default function StopList({ stops, route, serviceType, company = "KMB", direction = "outbound" }: StopListProps) {
   const [etaMap, setEtaMap] = useState<Record<string, EtaState>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [watchedStopId, setWatchedStopId] = useState<string | null>(null);
   const etaMapRef = useRef(etaMap);
   etaMapRef.current = etaMap;
+
+  // Load watched stop on mount
+  useEffect(() => {
+    const watched = getWatch(company as "KMB" | "CTB", route);
+    if (watched) {
+      setWatchedStopId(watched.stopId);
+    }
+  }, [company, route]);
+
+  const toggleWatch = (stopId: string, stopName: string) => {
+    if (watchedStopId === stopId) {
+      // Unwatch
+      removeWatch(company as "KMB" | "CTB", route);
+      setWatchedStopId(null);
+    } else {
+      // Watch this stop
+      addWatch({
+        stopId,
+        stopName,
+        route,
+        company: company as "KMB" | "CTB",
+        direction,
+      });
+      setWatchedStopId(stopId);
+    }
+  };
 
   // 單個 stop 撳「到站時間」：fetch + 顯示
   const fetchEta = async (stopId: string) => {
@@ -244,6 +273,16 @@ export default function StopList({ stops, route, serviceType, company = "KMB" }:
                     className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-900 rounded-md transition-colors"
                   >
                     {state?.loading ? "..." : "到站時間"}
+                  </button>
+                  <button
+                    onClick={() => toggleWatch(stop.stop, stop.name_tc)}
+                    className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      watchedStopId === stop.stop
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                    }`}
+                  >
+                    {watchedStopId === stop.stop ? "✅ 已監察" : "加入監察"}
                   </button>
                 </div>
                 {/* 車站位置 button (下面對齊) */}

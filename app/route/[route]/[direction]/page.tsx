@@ -342,6 +342,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
               route={routeInfo.route}
               serviceType={String(serviceType) === "2" ? 2 : 1}
               company={company}
+              direction={direction as "inbound" | "outbound"}
             />
           )}
         </div>
