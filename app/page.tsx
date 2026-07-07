@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { getFavorites } from "@/lib/favorites";
 import { getRecent, type RecentSearch } from "@/lib/recent";
+import Dashboard from "@/components/Dashboard";
+
+type ViewMode = "search" | "dashboard";
 
 export default function Home() {
   const router = useRouter();
+  const [viewMode, setViewMode] = useState<ViewMode>("search");
   const [route, setRoute] = useState("");
   const [direction, setDirection] = useState<"outbound" | "inbound">("outbound");
   const [favorites, setFavorites] = useState<Array<{ company: "KMB" | "CTB"; route: string }>>([]);
@@ -94,15 +98,47 @@ export default function Home() {
     <main className="flex-1 flex flex-col items-center px-4 py-12 sm:py-16">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-            巴士路線搜尋
-          </h1>
-          <p className="text-stone-900 text-sm sm:text-base">
-            巴士路線、車站及到站時間
-          </p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex-1">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-1">
+              巴士路線搜尋
+            </h1>
+            <p className="text-stone-900 text-sm sm:text-base">
+              巴士路線、車站及到站時間
+            </p>
+          </div>
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-stone-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode("search")}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                viewMode === "search"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+              title="搜尋模式"
+            >
+              🔍 搜尋
+            </button>
+            <button
+              onClick={() => setViewMode("dashboard")}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                viewMode === "dashboard"
+                  ? "bg-white text-stone-900 shadow-sm"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+              title="Dashboard 模式"
+            >
+              📊 Dashboard
+            </button>
+          </div>
         </div>
 
+        {/* Dashboard Mode */}
+        {viewMode === "dashboard" ? (
+          <Dashboard />
+        ) : (
+          <>
         {/* Search Form */}
         <form
           onSubmit={handleSubmit}
@@ -292,6 +328,8 @@ export default function Home() {
           <div>即時班次：九巴開放數據 / 城巴開放數據</div>
           <div>車費及服務時間：hk-bus-crawling</div>
         </div>
+          </>
+        )}
       </div>
     </main>
   );
