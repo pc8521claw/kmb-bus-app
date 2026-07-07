@@ -3,8 +3,8 @@
 // 輸出: [{company, route, direction, stopId, stopName, eta, etaTime},...]
 
 import { NextRequest, NextResponse } from "next/server";
-import { fetchEta as fetchKmbEta } from "@/lib/kmb-api";
-import { fetchCtbEta } from "@/lib/ctb-api";
+import { fetchEta as fetchKmbEta, fetchRouteInfo as fetchKmbInfo } from "@/lib/kmb-api";
+import { fetchCtbEta, fetchCtbRouteInfo } from "@/lib/ctb-api";
 
 type Company = "KMB" | "CTB";
 type Direction = "inbound" | "outbound";
@@ -83,6 +83,22 @@ export async function GET(request: NextRequest) {
   const results: DashboardResult[] = await Promise.all(
     watches.map(async (watch): Promise<DashboardResult> => {
       try {
+        // Fetch dest_tc if not stored
+        let dest_tc = watch.dest_tc || "";
+        if (!dest_tc) {
+          try {
+            if (watch.company === "CTB") {
+              const info = await fetchCtbRouteInfo(watch.route);
+              dest_tc = info?.dest_tc || "";
+            } else {
+              const info = await fetchKmbInfo(watch.route, watch.direction);
+              dest_tc = info?.dest_tc || "";
+            }
+          } catch {
+            // ignore
+          }
+        }
+
         let etaData;
         if (watch.company === "CTB") {
           etaData = await fetchCtbEta(watch.stopId, watch.route);
@@ -108,7 +124,7 @@ export async function GET(request: NextRequest) {
           direction: watch.direction,
           stopId: watch.stopId,
           stopName: watch.stopName,
-          dest_tc: watch.dest_tc || "",
+          dest_tc,
           eta,
           etaTime,
         };
