@@ -25,29 +25,27 @@ interface DashboardResult {
   stopId: string;
   stopName: string;
   dest_tc: string;
-  eta: string | null;
-  etaTime: string | null;
+  eta: string | null; // formatted string
+  etaTime: string | null; // raw ETA string for client-side formatting
   error?: string;
 }
 
-function formatEta(etaStr: string | null): { eta: string; etaTime: string | null } {
-  if (!etaStr) return { eta: "無班", etaTime: null };
+// Server-side: return raw eta string, client formats it (avoids timezone issues on server)
+function calcEta(etaStr: string | null): string {
+  if (!etaStr) return "無班";
   try {
-    // KMB API returns: "2026-07-07T14:30:00+08:00" - new Date() parses this correctly
     const etaDate = new Date(etaStr);
-    if (isNaN(etaDate.getTime())) return { eta: "無班", etaTime: null };
-
+    if (isNaN(etaDate.getTime())) return "無班";
     const now = new Date();
     const diffMs = etaDate.getTime() - now.getTime();
     const diffMin = Math.round(diffMs / 60000);
-
-    if (diffMin <= 0) return { eta: "即將到站", etaTime: etaDate.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
-    if (diffMin < 60) return { eta: `${diffMin}分鐘`, etaTime: etaDate.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
-    const hours = Math.floor(diffMin / 60);
-    const mins = diffMin % 60;
-    return { eta: `${hours}小時${mins}分`, etaTime: etaDate.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
+    if (diffMin < 1) return "即將到站";
+    if (diffMin < 60) return `${diffMin}分鐘`;
+    const h = Math.floor(diffMin / 60);
+    const m = diffMin % 60;
+    return `${h}小時${m}分`;
   } catch {
-    return { eta: "Error", etaTime: null };
+    return "Error";
   }
 }
 
@@ -97,11 +95,11 @@ export async function GET(request: NextRequest) {
 
         if (etaData && etaData.length > 0) {
           const first = etaData[0];
-          const formatted = formatEta(first.eta);
-          eta = formatted.eta;
-          etaTime = formatted.etaTime;
+          eta = calcEta(first.eta);
+          etaTime = first.eta; // raw string for client-side formatting
         } else {
           eta = "無班";
+          etaTime = null;
         }
 
         return {
@@ -122,7 +120,7 @@ export async function GET(request: NextRequest) {
           stopId: watch.stopId,
           stopName: watch.stopName,
           dest_tc: "",
-          eta: null,
+          eta: "Error",
           etaTime: null,
           error: e instanceof Error ? e.message : "Unknown error",
         };

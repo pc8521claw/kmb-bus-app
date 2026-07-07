@@ -21,6 +21,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState<string | null>(null);
 
+  // Client-side time formatting (same as StopList)
+  const formatTime = (etaStr: string | null) => {
+    if (!etaStr) return null;
+    const d = new Date(etaStr);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" });
+  };
+
   const fetchDashboard = useCallback(async () => {
     const watches = getWatchList();
     const watchArray = Object.values(watches);
@@ -183,11 +191,12 @@ export default function Dashboard() {
                 <div className="text-lg font-bold text-green-600">
                   {item.eta || "—"}
                 </div>
-                {item.etaTime && (
-                  <div className="text-xs text-stone-900 opacity-60">
-                    {item.etaTime}
-                  </div>
-                )}
+                {(() => {
+                  const t = formatTime(item.etaTime);
+                  return t ? (
+                    <div className="text-xs text-stone-900 opacity-60">{t}</div>
+                  ) : null;
+                })()}
               </div>
             </div>
           </Link>
