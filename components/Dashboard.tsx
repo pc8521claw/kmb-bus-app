@@ -207,7 +207,7 @@ export default function Dashboard() {
         <div>
           <h2 className="text-xl font-bold text-stone-900">監察名單</h2>
           <p className="text-xs text-stone-900 opacity-60 mt-1">
-            每30秒自動更新 · 拖動排序 📌
+            每30秒自動更新
           </p>
         </div>
         <button
@@ -252,10 +252,6 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between gap-4">
                   {/* Drag handle + Route Info */}
                   <div className="flex items-center gap-3">
-                    {/* Drag handle */}
-                    <div className="text-stone-400 cursor-grab active:cursor-grabbing select-none">
-                      ⋮⋮
-                    </div>
                     {/* Company dot */}
                     <span
                       className="inline-block w-2 h-2 rounded-full flex-shrink-0"
