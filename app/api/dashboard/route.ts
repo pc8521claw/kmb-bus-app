@@ -33,17 +33,33 @@ interface DashboardResult {
 function formatEta(etaStr: string | null): { eta: string; etaTime: string | null } {
   if (!etaStr) return { eta: "無班", etaTime: null };
   try {
-    const etaDate = new Date(etaStr);
-    if (isNaN(etaDate.getTime())) return { eta: "無班", etaTime: null };
+    let hour: number, minute: number;
+
+    if (etaStr.includes("/")) {
+      // Format: 2026/07/07 14:30:00 - parse manually
+      const [, timePart] = etaStr.split(" ");
+      const [h, m] = timePart.split(":").map(Number);
+      hour = h;
+      minute = m;
+    } else {
+      // ISO format
+      const d = new Date(etaStr);
+      if (isNaN(d.getTime())) return { eta: "無班", etaTime: null };
+      hour = d.getHours();
+      minute = d.getMinutes();
+    }
+
+    // Calculate diff using local time
     const now = new Date();
+    const etaDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute);
     const diffMs = etaDate.getTime() - now.getTime();
     const diffMin = Math.round(diffMs / 60000);
 
-    if (diffMin <= 0) return { eta: "即將到站", etaTime: etaDate.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
-    if (diffMin < 60) return { eta: `${diffMin}分鐘`, etaTime: etaDate.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
+    if (diffMin <= 0) return { eta: "即將到站", etaTime: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}` };
+    if (diffMin < 60) return { eta: `${diffMin}分鐘`, etaTime: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}` };
     const hours = Math.floor(diffMin / 60);
     const mins = diffMin % 60;
-    return { eta: `${hours}小時${mins}分`, etaTime: etaDate.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
+    return { eta: `${hours}小時${mins}分`, etaTime: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}` };
   } catch {
     return { eta: "Error", etaTime: null };
   }
