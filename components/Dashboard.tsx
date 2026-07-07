@@ -98,12 +98,12 @@ export default function Dashboard() {
         <div className="text-stone-900 text-sm opacity-60 mb-6">
           搜尋路線後，撳 ⭐ 加入收藏
         </div>
-        <Link
-          href="/"
+        <button
+          onClick={() => window.location.href = "/"}
           className="px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
           去搜尋
-        </Link>
+        </button>
       </div>
     );
   }
