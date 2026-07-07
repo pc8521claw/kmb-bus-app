@@ -18,6 +18,11 @@ interface WatchItem {
   dest_tc?: string;
 }
 
+interface EtaEntry {
+  eta: string | null; // formatted string like "2分鐘"
+  etaTime: string | null; // raw ETA string for client-side formatting
+}
+
 interface DashboardResult {
   company: Company;
   route: string;
@@ -25,8 +30,7 @@ interface DashboardResult {
   stopId: string;
   stopName: string;
   dest_tc: string;
-  eta: string | null; // formatted string
-  etaTime: string | null; // raw ETA string for client-side formatting
+  etaList: EtaEntry[]; // up to 2 ETA entries
   error?: string;
 }
 
@@ -90,16 +94,15 @@ export async function GET(request: NextRequest) {
           etaData = await fetchKmbEta(watch.stopId, watch.route, 1);
         }
 
-        let eta: string | null = null;
-        let etaTime: string | null = null;
-
+        // Build up to 2 ETA entries
+        const etaList: EtaEntry[] = [];
         if (etaData && etaData.length > 0) {
-          const first = etaData[0];
-          eta = calcEta(first.eta);
-          etaTime = first.eta; // raw string for client-side formatting
-        } else {
-          eta = "無班";
-          etaTime = null;
+          for (let i = 0; i < Math.min(etaData.length, 2); i++) {
+            etaList.push({
+              eta: calcEta(etaData[i].eta),
+              etaTime: etaData[i].eta,
+            });
+          }
         }
 
         return {
@@ -109,8 +112,7 @@ export async function GET(request: NextRequest) {
           stopId: watch.stopId,
           stopName: watch.stopName,
           dest_tc,
-          eta,
-          etaTime,
+          etaList,
         };
       } catch (e) {
         return {
@@ -120,8 +122,7 @@ export async function GET(request: NextRequest) {
           stopId: watch.stopId,
           stopName: watch.stopName,
           dest_tc: "",
-          eta: "Error",
-          etaTime: null,
+          etaList: [],
           error: e instanceof Error ? e.message : "Unknown error",
         };
       }

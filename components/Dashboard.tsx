@@ -4,6 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { getWatchList, type Company } from "@/lib/watch";
 
+interface EtaEntry {
+  eta: string | null;
+  etaTime: string | null;
+}
+
 interface DashboardItem {
   company: Company;
   route: string;
@@ -11,8 +16,7 @@ interface DashboardItem {
   stopId: string;
   dest_tc: string;
   stopName: string;
-  eta: string | null;
-  etaTime: string | null;
+  etaList: EtaEntry[];
   error?: string;
 }
 
@@ -37,6 +41,26 @@ export default function Dashboard() {
     const diffMin = Math.round(diffMs / 60000);
     if (diffMin < 1) return { eta: "即將到站", time: d.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
     return { eta: `${diffMin}分鐘`, time: d.toLocaleTimeString("zh-HK", { hour: "2-digit", minute: "2-digit" }) };
+  };
+
+  // Render ETA list - up to 2 entries stacked vertically
+  const renderEtaList = (etaList: EtaEntry[]) => {
+    if (!etaList || etaList.length === 0) {
+      return <span className="text-stone-900">—</span>;
+    }
+    return (
+      <div className="text-right">
+        {etaList.map((entry, i) => {
+          const f = formatEta(entry.etaTime);
+          return (
+            <div key={i} className={i > 0 ? "mt-0.5" : ""}>
+              <span className="text-green-600 font-medium">{entry.eta || "—"}</span>
+              {f && <span className="text-xs text-stone-900"> ({f.time})</span>}
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   const fetchDashboard = useCallback(async () => {
@@ -302,19 +326,8 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* ETA */}
-                  <div className="text-right">
-                    {(() => {
-                      const f = formatEta(item.etaTime);
-                      if (!f) return <span className="text-stone-900">—</span>;
-                      return (
-                        <>
-                          <div className="text-green-600 font-medium">{f.eta}</div>
-                          <div className="text-xs text-stone-900">({f.time})</div>
-                        </>
-                      );
-                    })()}
-                  </div>
+                  {/* ETA - up to 2 entries */}
+                  {renderEtaList(item.etaList)}
                 </div>
               </Link>
             </div>
