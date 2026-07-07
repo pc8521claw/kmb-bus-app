@@ -217,11 +217,11 @@ export default function Dashboard() {
                   : "bg-stone-100 text-stone-600 hover:bg-stone-200"
               }`}
             >
-              {editMode ? "排序" : "✏️ 排序"}
+              {editMode ? "✏️ 排序" : "排序"}
             </button>
-            <span className="text-xs text-stone-900 opacity-60">
-              {editMode ? "拖動排序" : "長按拖動排序"}
-            </span>
+            {editMode && (
+              <span className="text-xs text-stone-900 opacity-60">拖動排序</span>
+            )}
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
