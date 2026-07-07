@@ -55,7 +55,7 @@ export default function Dashboard() {
           return (
             <div key={i} className={i > 0 ? "mt-0.5" : ""}>
               <div className="text-green-600 font-medium">{entry.eta || "—"}</div>
-              {f && <div className="text-xs text-stone-900">({f.time})</div>}
+              {f && <div className="text-xs text-stone-900">{f.time}</div>}
             </div>
           );
         })}
