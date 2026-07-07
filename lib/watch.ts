@@ -1,7 +1,8 @@
 // 監察清單（Watch List）管理 - localStorage
-// 格式: { "KMB-58M": { stopId: "4CF25CB2C36E36F0", stopName: "屯門站", route: "58M", company: "KMB", direction: "outbound" }, ... }
+// 格式: { "KMB-58M-001A0F2C03": { stopId: "001A0F2C03", stopName: "屯門站", route: "58M", company: "KMB", direction: "outbound" }, ... }
+// Key 包含 company + route + stopId，可同一路線監察多個站點
 
-const STORAGE_KEY = "kmb-watch";
+const STORAGE_KEY = "***";
 
 export type Company = "KMB" | "CTB";
 export type Direction = "inbound" | "outbound";
@@ -12,6 +13,10 @@ export interface WatchItem {
   route: string;
   company: Company;
   direction: Direction;
+}
+
+function makeKey(company: Company, route: string, stopId: string): string {
+  return `${company}-${route}-${stopId}`;
 }
 
 export function getWatchList(): Record<string, WatchItem> {
@@ -26,25 +31,25 @@ export function getWatchList(): Record<string, WatchItem> {
 }
 
 export function addWatch(item: WatchItem): void {
-  const key = `${item.company}-${item.route}`;
+  const key = makeKey(item.company, item.route, item.stopId);
   const current = getWatchList();
   current[key] = item;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
 }
 
-export function removeWatch(company: Company, route: string): void {
-  const key = `${company}-${route}`;
+export function removeWatch(company: Company, route: string, stopId: string): void {
+  const key = makeKey(company, route, stopId);
   const current = getWatchList();
   delete current[key];
   localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
 }
 
-export function isWatched(company: Company, route: string): boolean {
+export function isWatched(company: Company, route: string, stopId: string): boolean {
   const current = getWatchList();
-  return Boolean(current[`${company}-${route}`]);
+  return Boolean(current[makeKey(company, route, stopId)]);
 }
 
-export function getWatch(company: Company, route: string): WatchItem | null {
+export function getWatch(company: Company, route: string, stopId: string): WatchItem | null {
   const current = getWatchList();
-  return current[`${company}-${route}`] || null;
+  return current[makeKey(company, route, stopId)] || null;
 }

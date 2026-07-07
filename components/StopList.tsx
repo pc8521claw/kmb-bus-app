@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { StopWithName, ServiceType, EtaInfo } from "@/lib/types";
-import { addWatch, removeWatch, getWatch, type Direction } from "@/lib/watch";
+import { addWatch, removeWatch, getWatchList, type Direction } from "@/lib/watch";
 
 // 取得 platform 對應嘅地圖 URL
 // iOS → Apple Maps (native)
@@ -43,23 +43,28 @@ const REFRESH_INTERVAL_MS = 30_000;  // 30 秒
 export default function StopList({ stops, route, serviceType, company = "KMB", direction = "outbound" }: StopListProps) {
   const [etaMap, setEtaMap] = useState<Record<string, EtaState>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [watchedStopId, setWatchedStopId] = useState<string | null>(null);
+  const [watchedStopIds, setWatchedStopIds] = useState<Set<string>>(new Set());
   const etaMapRef = useRef(etaMap);
   etaMapRef.current = etaMap;
 
-  // Load watched stop on mount
+  // Load watched stops on mount
   useEffect(() => {
-    const watched = getWatch(company as "KMB" | "CTB", route);
-    if (watched) {
-      setWatchedStopId(watched.stopId);
-    }
+    const watches = getWatchList();
+    const routeWatches = Object.values(watches).filter(
+      (w) => w.company === (company as "KMB" | "CTB") && w.route === route
+    );
+    setWatchedStopIds(new Set(routeWatches.map((w) => w.stopId)));
   }, [company, route]);
 
   const toggleWatch = (stopId: string, stopName: string) => {
-    if (watchedStopId === stopId) {
-      // Unwatch
-      removeWatch(company as "KMB" | "CTB", route);
-      setWatchedStopId(null);
+    if (watchedStopIds.has(stopId)) {
+      // Unwatch this stop
+      removeWatch(company as "KMB" | "CTB", route, stopId);
+      setWatchedStopIds((prev) => {
+        const next = new Set(prev);
+        next.delete(stopId);
+        return next;
+      });
     } else {
       // Watch this stop
       addWatch({
@@ -69,7 +74,7 @@ export default function StopList({ stops, route, serviceType, company = "KMB", d
         company: company as "KMB" | "CTB",
         direction,
       });
-      setWatchedStopId(stopId);
+      setWatchedStopIds((prev) => new Set(prev).add(stopId));
     }
   };
 
@@ -277,12 +282,12 @@ export default function StopList({ stops, route, serviceType, company = "KMB", d
                   <button
                     onClick={() => toggleWatch(stop.stop, stop.name_tc)}
                     className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                      watchedStopId === stop.stop
+                      watchedStopIds.has(stop.stop)
                         ? "bg-green-100 text-green-700 hover:bg-green-200"
                         : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                     }`}
                   >
-                    {watchedStopId === stop.stop ? "✅ 已監察" : "加入監察"}
+                    {watchedStopIds.has(stop.stop) ? "✅ 已監察" : "加入監察"}
                   </button>
                 </div>
                 {/* 車站位置 button (下面對齊) */}
