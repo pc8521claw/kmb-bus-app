@@ -33,11 +33,8 @@ interface DashboardResult {
 function formatEta(etaStr: string | null): { eta: string; etaTime: string | null } {
   if (!etaStr) return { eta: "無班", etaTime: null };
   try {
-    // Parse as Hong Kong local time (API returns CST/UTC+8)
-    const [datePart, timePart] = etaStr.split(" ");
-    const [year, month, day] = datePart.split("/").map(Number);
-    const [hour, minute, second] = timePart.split(":").map(Number);
-    const etaDate = new Date(year, month - 1, day, hour, minute, second);
+    const etaDate = new Date(etaStr);
+    if (isNaN(etaDate.getTime())) return { eta: "無班", etaTime: null };
     const now = new Date();
     const diffMs = etaDate.getTime() - now.getTime();
     const diffMin = Math.round(diffMs / 60000);
