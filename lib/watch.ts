@@ -1,7 +1,7 @@
 // 監察清單（Watch List）管理 - localStorage
 // 格式: { "KMB-58M": { stopId: "4CF25CB2C36E36F0", stopName: "屯門站", route: "58M", company: "KMB", direction: "outbound" }, ... }
 
-const STORAGE_KEY = "***";
+const STORAGE_KEY = "kmb-watch";
 
 export type Company = "KMB" | "CTB";
 export type Direction = "inbound" | "outbound";
