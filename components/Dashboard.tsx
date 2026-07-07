@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [touchDragIndex, setTouchDragIndex] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number>(0);
+  const [editMode, setEditMode] = useState(false); // drag lock toggle
 
   // Format ETA like StopList: "X分鐘" + "(下午HH:MM)"
   const formatEta = (etaStr: string | null) => {
@@ -206,17 +207,33 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-stone-900">監察名單</h2>
-          <p className="text-xs text-stone-900 opacity-60 mt-1">
-            每30秒自動更新
-          </p>
+          {/* Edit mode toggle */}
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              onClick={() => setEditMode(!editMode)}
+              className={`px-2 py-0.5 text-xs font-medium rounded-md transition-all ${
+                editMode
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+              }`}
+            >
+              {editMode ? "🔒 鎖定" : "✏️ 排序"}
+            </button>
+            {editMode && (
+              <span className="text-xs text-stone-900 opacity-60">長按拖動排序</span>
+            )}
+          </div>
         </div>
-        <button
-          onClick={fetchDashboard}
-          disabled={loading}
-          className="px-3 py-1.5 text-xs bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors disabled:opacity-50"
-        >
-          {loading ? "更新中..." : "立即更新"}
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          <button
+            onClick={fetchDashboard}
+            disabled={loading}
+            className="px-3 py-1.5 text-xs bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors disabled:opacity-50"
+          >
+            {loading ? "更新中..." : "立即更新"}
+          </button>
+          <span className="text-xs text-stone-900 opacity-60">每30秒自動更新</span>
+        </div>
       </div>
 
       {/* Dashboard List */}
@@ -228,21 +245,23 @@ export default function Dashboard() {
           return (
             <div
               key={`${item.company}-${item.route}-${item.stopId}`}
-              draggable
+              draggable={editMode}
               data-drag-index={index}
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragOver={(e) => handleDragOver(e, index)}
-              onDrop={(e) => handleDrop(e, index)}
-              onDragEnd={handleDragEnd}
-              onTouchStart={(e) => handleTouchStart(e, index)}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={() => handleTouchEnd()}
+              onDragStart={editMode ? (e) => handleDragStart(e, index) : undefined}
+              onDragOver={editMode ? (e) => handleDragOver(e, index) : undefined}
+              onDrop={editMode ? (e) => handleDrop(e, index) : undefined}
+              onDragEnd={editMode ? handleDragEnd : undefined}
+              onTouchStart={editMode ? (e) => handleTouchStart(e, index) : undefined}
+              onTouchMove={editMode ? handleTouchMove : undefined}
+              onTouchEnd={editMode ? () => handleTouchEnd() : undefined}
               className={`bg-white rounded-xl border transition-all touch-none ${
-                isDragging
-                  ? "border-blue-400 opacity-50 shadow-lg scale-[1.02]"
-                  : isDragOver
-                  ? "border-blue-300 shadow-md"
-                  : "border-stone-200 hover:border-blue-400 hover:shadow-sm"
+                editMode
+                  ? isDragging
+                    ? "border-blue-400 opacity-50 shadow-lg scale-[1.02]"
+                    : isDragOver
+                    ? "border-blue-300 shadow-md"
+                    : "border-stone-200 hover:border-blue-400 hover:shadow-sm cursor-grab active:cursor-grabbing"
+                  : "border-stone-200"
               }`}
             >
               <Link
