@@ -257,33 +257,35 @@ export default function StopList({ stops, route, serviceType, company = "KMB", d
               key={stop.stop}
               className="border border-stone-100 rounded-lg p-3 hover:border-stone-200 transition-colors"
             >
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xs font-mono text-stone-900 shrink-0">
-                        {stop.seq.padStart(2, "0")}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">{stop.name_tc}</div>
-                        {stop.name_en && (
-                          <div className="text-xs text-stone-900 truncate">
-                            {stop.name_en}
-                          </div>
-                        )}
-                      </div>
+              <div className="flex gap-3">
+                {/* Stop info - left side */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs font-mono text-stone-900 shrink-0">
+                      {stop.seq.padStart(2, "0")}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium truncate">{stop.name_tc}</div>
+                      {stop.name_en && (
+                        <div className="text-xs text-stone-900 truncate">
+                          {stop.name_en}
+                        </div>
+                      )}
                     </div>
                   </div>
+                </div>
+                {/* Buttons - stacked vertically on right */}
+                <div className="flex flex-col gap-2 shrink-0">
                   <button
                     onClick={() => fetchEta(stop.stop)}
                     disabled={state?.loading}
-                    className="shrink-0 px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-900 rounded-md transition-colors"
+                    className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 disabled:bg-stone-100 disabled:text-stone-900 rounded-md transition-colors"
                   >
                     {state?.loading ? "..." : "到站時間"}
                   </button>
                   <button
                     onClick={() => toggleWatch(stop.stop, stop.name_tc)}
-                    className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                       watchedStopIds.has(stop.stop)
                         ? "bg-green-100 text-green-700 hover:bg-green-200"
                         : "bg-stone-100 text-stone-700 hover:bg-stone-200"
@@ -291,26 +293,25 @@ export default function StopList({ stops, route, serviceType, company = "KMB", d
                   >
                     {watchedStopIds.has(stop.stop) ? "✅ 已監察" : "加入監察"}
                   </button>
+                  {stop.lat && stop.long && (() => {
+                    const mapUrl = getMapUrl(stop.lat, stop.long, stop.name_tc);
+                    return mapUrl ? (
+                      <a
+                        href={mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors"
+                      >
+                        車站位置
+                      </a>
+                    ) : null;
+                  })()}
                 </div>
-                {/* 車站位置 button (下面對齊) */}
-                {stop.lat && stop.long && (() => {
-                  const mapUrl = getMapUrl(stop.lat, stop.long, stop.name_tc);
-                  return mapUrl ? (
-                    <a
-                      href={mapUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="self-end px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors"
-                    >
-                      車站位置
-                    </a>
-                  ) : null;
-                })()}
               </div>
 
               {/* ETA 結果 */}
               {(state?.loading || hasEta || state?.error) && (
-                <div className="mt-2 ml-7 text-sm">
+                <div className="mt-2 text-sm">
                   {state?.loading && !state.data && (
                     <div className="text-stone-900 text-xs">查詢中...</div>
                   )}

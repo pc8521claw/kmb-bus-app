@@ -21,7 +21,6 @@ const STORAGE_KEY = "kmb-watch-order";
 export default function Dashboard() {
   const [items, setItems] = useState<DashboardItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -81,35 +80,6 @@ export default function Dashboard() {
     const interval = setInterval(fetchDashboard, 30000);
     return () => clearInterval(interval);
   }, [fetchDashboard]);
-
-  const handleRefresh = async (company: Company, route: string) => {
-    setRefreshing(`${company}-${route}`);
-    const watches = getWatchList();
-    const single = Object.values(watches).filter(
-      (w) => w.company === company && w.route === route
-    );
-    if (single.length === 0) return;
-    try {
-      const res = await fetch(
-        `/api/dashboard?watches=${encodeURIComponent(JSON.stringify(single))}`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setItems((prev) =>
-          prev.map((item) => {
-            if (item.company === company && item.route === route && data.results?.[0]) {
-              return { ...item, ...data.results[0] };
-            }
-            return item;
-          })
-        );
-      }
-    } catch (e) {
-      console.error("Refresh error:", e);
-    } finally {
-      setRefreshing(null);
-    }
-  };
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -262,17 +232,6 @@ export default function Dashboard() {
 
                   {/* ETA */}
                   <div className="text-right">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleRefresh(item.company, item.route);
-                      }}
-                      disabled={refreshing === `${item.company}-${item.route}`}
-                      className="text-xs text-blue-600 hover:text-blue-700 disabled:text-stone-400 mb-1"
-                    >
-                      {refreshing === `${item.company}-${item.route}` ? "..." : "刷新"}
-                    </button>
                     <span className="text-green-600 font-medium">
                       🚌 {item.eta || "—"}
                     </span>
