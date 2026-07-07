@@ -158,7 +158,7 @@ export default function Dashboard() {
                       {item.route}
                     </span>
                   </div>
-                  <div className="text-xs text-blue-600 mt-0.5">
+                  <div className="text-xs text-blue-600 mt-0.5 font-bold">
                     📍 {item.stopName}
                   </div>
                   <div className="text-xs text-stone-900 opacity-60 mt-0.5">

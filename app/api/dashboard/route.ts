@@ -36,7 +36,7 @@ function formatEta(etaStr: string | null): { eta: string; etaTime: string | null
     let hour: number, minute: number;
 
     if (etaStr.includes("/")) {
-      // Format: 2026/07/07 14:30:00 - parse manually
+      // Format: 2026/07/07 14:30:00 - parse manually as Hong Kong local time
       const [, timePart] = etaStr.split(" ");
       const [h, m] = timePart.split(":").map(Number);
       hour = h;
@@ -49,17 +49,26 @@ function formatEta(etaStr: string | null): { eta: string; etaTime: string | null
       minute = d.getMinutes();
     }
 
-    // Calculate diff using local time
+    // Calculate diff - use tomorrow if time has already passed today
     const now = new Date();
-    const etaDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute);
-    const diffMs = etaDate.getTime() - now.getTime();
-    const diffMin = Math.round(diffMs / 60000);
+    let etaDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute);
+    let diffMs = etaDate.getTime() - now.getTime();
+    let diffMin = Math.round(diffMs / 60000);
 
-    if (diffMin <= 0) return { eta: "即將到站", etaTime: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}` };
-    if (diffMin < 60) return { eta: `${diffMin}分鐘`, etaTime: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}` };
+    // If already passed today, use tomorrow's time
+    if (diffMin < 0) {
+      etaDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, hour, minute);
+      diffMs = etaDate.getTime() - now.getTime();
+      diffMin = Math.round(diffMs / 60000);
+    }
+
+    const displayTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+
+    if (diffMin <= 0) return { eta: "即將到站", etaTime: displayTime };
+    if (diffMin < 60) return { eta: `${diffMin}分鐘`, etaTime: displayTime };
     const hours = Math.floor(diffMin / 60);
     const mins = diffMin % 60;
-    return { eta: `${hours}小時${mins}分`, etaTime: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}` };
+    return { eta: `${hours}小時${mins}分`, etaTime: displayTime };
   } catch {
     return { eta: "Error", etaTime: null };
   }
