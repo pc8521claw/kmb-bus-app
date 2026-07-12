@@ -127,7 +127,7 @@ export default function Home() {
               onClick={() => handleSetViewMode("search")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                 viewMode === "search"
-                  ? "bg-white text-stone-900 shadow-sm"
+                  ? "bg-blue-600 text-white shadow-sm"
                   : "text-stone-600 hover:text-stone-900"
               }`}
               title="搜尋模式"
@@ -138,7 +138,7 @@ export default function Home() {
               onClick={() => handleSetViewMode("dashboard")}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                 viewMode === "dashboard"
-                  ? "bg-white text-stone-900 shadow-sm"
+                  ? "bg-blue-600 text-white shadow-sm"
                   : "text-stone-600 hover:text-stone-900"
               }`}
               title="監察名單模式"
