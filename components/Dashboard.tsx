@@ -278,7 +278,9 @@ export default function Dashboard() {
               onTouchStart={editMode ? (e) => handleTouchStart(e, index) : undefined}
               onTouchMove={editMode ? handleTouchMove : undefined}
               onTouchEnd={editMode ? () => handleTouchEnd() : undefined}
-              className={`bg-white rounded-xl border transition-all touch-none ${
+              className={`bg-white rounded-xl border transition-all ${
+                editMode ? 'touch-none' : ''
+              } ${
                 editMode
                   ? isDragging
                     ? "border-blue-400 opacity-50 shadow-lg scale-[1.02]"
