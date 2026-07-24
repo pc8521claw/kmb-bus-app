@@ -336,6 +336,32 @@ export default function Dashboard() {
           );
         })}
       </div>
+
+      {/* Bottom controls */}
+      <div className="flex items-center justify-between mt-6 pt-4 border-t border-stone-200">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setEditMode(!editMode)}
+            className={`px-2 py-0.5 text-xs font-medium rounded-md transition-all ${
+              editMode
+                ? "bg-green-100 text-green-700"
+                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+            }`}
+          >
+            {editMode ? "✏️ 排序" : "排序"}
+          </button>
+          {editMode && (
+            <span className="text-xs text-stone-900 opacity-60">拖動排序</span>
+          )}
+        </div>
+        <button
+          onClick={fetchDashboard}
+          disabled={loading}
+          className="px-3 py-1.5 text-xs bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors disabled:opacity-50"
+        >
+          {loading ? "更新中..." : "立即更新"}
+        </button>
+      </div>
     </div>
   );
 }
