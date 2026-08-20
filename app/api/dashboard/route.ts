@@ -98,13 +98,21 @@ export async function GET(request: NextRequest) {
             fetchKmbEta(watch.stopId, watch.route, 1),
             fetchKmbEta(watch.stopId, watch.route, 2),
           ]);
-          // Merge and sort by ETA time
+          // Merge and sort by ETA time, then deduplicate (same minute = only show once)
           allEtaData = [...(eta1 || []), ...(eta2 || [])]
             .filter(e => e.eta)
             .sort((a, b) => {
-              const aTime = a.eta ? new Date(a.eta).getTime() : Infinity;
-              const bTime = b.eta ? new Date(b.eta).getTime() : Infinity;
+              const aTime = a.eta ? new Date(a.eta).getTime() : 0;
+              const bTime = b.eta ? new Date(b.eta).getTime() : 0;
               return aTime - bTime;
+            })
+            .filter((item, index, arr) => {
+              if (!item.eta) return false;
+              const itemTime = new Date(item.eta).getTime();
+              // Keep if first item or if time differs by more than 1 minute from previous
+              if (index === 0) return true;
+              const prevTime = arr[index - 1].eta ? new Date(arr[index - 1].eta!).getTime() : 0;
+              return Math.abs(itemTime - prevTime) > 60000; // >1 min diff
             });
         }
 
