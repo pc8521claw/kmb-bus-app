@@ -87,20 +87,34 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        let etaData;
+        // Fetch ALL serviceTypes (1 and 2) and merge
+        let allEtaData: { eta: string | null }[] = [];
         if (watch.company === "CTB") {
-          etaData = await fetchCtbEta(watch.stopId, watch.route);
+          const ctbData = await fetchCtbEta(watch.stopId, watch.route);
+          allEtaData = ctbData || [];
         } else {
-          etaData = await fetchKmbEta(watch.stopId, watch.route, 1);
+          // Fetch both serviceType 1 and 2 in parallel, then merge
+          const [eta1, eta2] = await Promise.all([
+            fetchKmbEta(watch.stopId, watch.route, 1),
+            fetchKmbEta(watch.stopId, watch.route, 2),
+          ]);
+          // Merge and sort by ETA time
+          allEtaData = [...(eta1 || []), ...(eta2 || [])]
+            .filter(e => e.eta)
+            .sort((a, b) => {
+              const aTime = a.eta ? new Date(a.eta).getTime() : Infinity;
+              const bTime = b.eta ? new Date(b.eta).getTime() : Infinity;
+              return aTime - bTime;
+            });
         }
 
-        // Build up to 2 ETA entries
+        // Build up to 2 ETA entries from merged data
         const etaList: EtaEntry[] = [];
-        if (etaData && etaData.length > 0) {
-          for (let i = 0; i < Math.min(etaData.length, 2); i++) {
+        if (allEtaData.length > 0) {
+          for (let i = 0; i < Math.min(allEtaData.length, 2); i++) {
             etaList.push({
-              eta: calcEta(etaData[i].eta),
-              etaTime: etaData[i].eta,
+              eta: calcEta(allEtaData[i].eta),
+              etaTime: allEtaData[i].eta,
             });
           }
         }
